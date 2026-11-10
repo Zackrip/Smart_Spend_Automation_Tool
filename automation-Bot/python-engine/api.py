@@ -1,14 +1,21 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException,UploadFile, File
+from fastapi.responses import StreamingResponse
+from src.statement_pdf_report import generate_statement_pdf
+from src.statement_processor import process_phonepe_statement
 from pydantic import BaseModel, Field
 from datetime import date, datetime
 from typing import List, Optional
 import pandas as pd
 import json
+from sqlalchemy import text
+from db_connection import engine
 from main import get_engine_status
 from src.anomaly_detection import detect_expense_anomalies
 from src.expense_forecasting import forecast_monthly_expenses
 from src.budget_analysis import analyze_budgets
 from src.savings_recommendations import analyze_savings_goals
+from src.notification_parser import extract_transaction
+from src.transaction_classifier import classify_transaction
 # ==========================================
 # 1. FASTAPI INITIALIZATION
 # ==========================================
@@ -64,6 +71,10 @@ class SavingsGoal(BaseModel):
     status: str
 class SavingsRequest(BaseModel):
     savings_goals: List[SavingsGoal]
+class NotificationRequest(BaseModel):
+    notification_text: str
+    source: Optional[str] = None
+    user_category: Optional[str] = None
 # ==========================================
 # 3. HELPER FUNCTION
 # ==========================================
@@ -206,3 +217,390 @@ def analyze_savings(request: SavingsRequest):
         raise HTTPException(
             status_code=500,
             detail="Savings recommendations failed.")
+
+@app.post("/parse/notification")
+def parse_notification(request: NotificationRequest):
+
+    try:
+        # Step 1: Extract transaction information
+        result = extract_transaction(
+            request.notification_text
+        )
+
+        # Step 2: Classify the transaction
+        classification = classify_transaction(
+            counterparty=result["counterparty"],
+            notification_text=request.notification_text,
+            user_category=request.user_category
+        )
+
+        # Step 3: Combine the results
+        result["category"] = classification["category"]
+
+        result["classification_method"] = (
+            classification["classification_method"]
+        )
+
+        result["needs_review"] = (
+            result["needs_review"]
+            or classification["needs_review"]
+        )
+
+        result["source"] = request.source
+
+        # Step 4: Return structured information
+        return {
+            "status": "success",
+            "transaction": result
+        }
+
+    except ValueError as error:
+        raise HTTPException(
+            status_code=400,
+            detail=str(error)
+        )
+
+    except Exception:
+        raise HTTPException(
+            status_code=500,
+            detail="Notification parsing failed."
+        )
+
+# ==========================================
+# DATABASE-BASED ANALYSIS ENDPOINTS
+# ==========================================
+
+
+# ==========================================
+# 1. ANOMALY DETECTION FROM POSTGRESQL
+# ==========================================
+
+@app.get("/analyze/anomalies/database")
+def analyze_database_anomalies(
+    user_id: int,
+    min_transactions: int = 4
+):
+
+    try:
+        query = text("""
+            SELECT
+                id,
+                user_id,
+                category_id,
+                amount
+            FROM transactions
+            WHERE user_id = :user_id
+              AND transaction_type = 'expense'
+              AND amount > 0
+            ORDER BY transaction_date
+        """)
+
+        df = pd.read_sql_query(
+            query,
+            engine,
+            params={"user_id": user_id}
+        )
+
+        if df.empty:
+            return {
+                "status": "success",
+                "data_source": "PostgreSQL",
+                "user_id": user_id,
+                "total_transactions": 0,
+                "anomalies_detected": 0,
+                "anomalies": []
+            }
+
+        results = detect_expense_anomalies(
+            df,
+            min_transactions=min_transactions
+        )
+
+        anomalies = results[
+            results["anomaly"] == True
+        ]
+
+        return {
+            "status": "success",
+            "data_source": "PostgreSQL",
+            "user_id": user_id,
+            "total_transactions": len(df),
+            "anomalies_detected": len(anomalies),
+            "anomalies": dataframe_to_records(anomalies)
+        }
+
+    except Exception as error:
+        print("Anomaly database error:", error)
+
+        raise HTTPException(
+            status_code=500,
+            detail="Database anomaly analysis failed."
+        )
+
+
+# ==========================================
+# 2. EXPENSE FORECASTING FROM POSTGRESQL
+# ==========================================
+
+@app.get("/analyze/forecast/database")
+def analyze_database_forecast(
+    user_id: int,
+    window: int = 3
+):
+
+    try:
+        query = text("""
+            SELECT
+                user_id,
+                DATE_TRUNC('month', transaction_date) AS month,
+                SUM(amount) AS monthly_expense
+            FROM transactions
+            WHERE user_id = :user_id
+              AND transaction_type = 'expense'
+              AND amount > 0
+            GROUP BY
+                user_id,
+                DATE_TRUNC('month', transaction_date)
+            ORDER BY month
+        """)
+
+        df = pd.read_sql_query(
+            query,
+            engine,
+            params={"user_id": user_id}
+        )
+
+        if df.empty:
+            return {
+                "status": "success",
+                "data_source": "PostgreSQL",
+                "user_id": user_id,
+                "message": "No expense history found.",
+                "forecasts": []
+            }
+
+        results = forecast_monthly_expenses(
+            df,
+            window=window
+        )
+
+        return {
+            "status": "success",
+            "data_source": "PostgreSQL",
+            "user_id": user_id,
+            "months_available": len(df),
+            "forecasts": dataframe_to_records(results)
+        }
+
+    except Exception as error:
+        print("Forecast database error:", error)
+
+        raise HTTPException(
+            status_code=500,
+            detail="Database expense forecasting failed."
+        )
+
+
+# ==========================================
+# 3. BUDGET ANALYSIS FROM POSTGRESQL
+# ==========================================
+
+@app.get("/analyze/budgets/database")
+def analyze_database_budgets(
+    user_id: int,
+    near_limit_pct: float = 80.0
+):
+
+    try:
+        # Fetch user's budgets
+        budget_query = text("""
+            SELECT
+                user_id,
+                category_id,
+                amount_limit,
+                start_date,
+                end_date
+            FROM budgets
+            WHERE user_id = :user_id
+        """)
+
+        budgets_df = pd.read_sql_query(
+            budget_query,
+            engine,
+            params={"user_id": user_id}
+        )
+
+        if budgets_df.empty:
+            return {
+                "status": "success",
+                "data_source": "PostgreSQL",
+                "user_id": user_id,
+                "total_budgets": 0,
+                "budgets": []
+            }
+
+        # Fetch user's transactions
+        transaction_query = text("""
+            SELECT
+                user_id,
+                category_id,
+                amount,
+                transaction_type,
+                transaction_date
+            FROM transactions
+            WHERE user_id = :user_id
+              AND transaction_type = 'expense'
+              AND amount > 0
+        """)
+
+        transactions_df = pd.read_sql_query(
+            transaction_query,
+            engine,
+            params={"user_id": user_id}
+        )
+
+        # Fetch category names
+        category_query = text("""
+            SELECT
+                id,
+                name
+            FROM categories
+            WHERE user_id = :user_id
+               OR user_id IS NULL
+        """)
+
+        categories_df = pd.read_sql_query(
+            category_query,
+            engine,
+            params={"user_id": user_id}
+        )
+
+        results = analyze_budgets(
+            budgets=budgets_df,
+            transactions=transactions_df,
+            categories=categories_df,
+            near_limit_pct=near_limit_pct
+        )
+
+        return {
+            "status": "success",
+            "data_source": "PostgreSQL",
+            "user_id": user_id,
+            "total_budgets": len(results),
+            "budgets": dataframe_to_records(results)
+        }
+
+    except Exception as error:
+        print("Budget database error:", error)
+
+        raise HTTPException(
+            status_code=500,
+            detail="Database budget analysis failed."
+        )
+
+
+# ==========================================
+# 4. SAVINGS RECOMMENDATIONS FROM POSTGRESQL
+# ==========================================
+
+@app.get("/analyze/savings/database")
+def analyze_database_savings(user_id: int):
+
+    try:
+        query = text("""
+            SELECT
+                user_id,
+                name,
+                target_amount,
+                current_amount,
+                target_date,
+                status
+            FROM savings_goals
+            WHERE user_id = :user_id
+        """)
+
+        df = pd.read_sql_query(
+            query,
+            engine,
+            params={"user_id": user_id}
+        )
+
+        if df.empty:
+            return {
+                "status": "success",
+                "data_source": "PostgreSQL",
+                "user_id": user_id,
+                "total_goals": 0,
+                "recommendations": []
+            }
+
+        results = analyze_savings_goals(df)
+
+        return {
+            "status": "success",
+            "data_source": "PostgreSQL",
+            "user_id": user_id,
+            "total_goals": len(results),
+            "recommendations": dataframe_to_records(results)
+        }
+
+    except Exception as error:
+        print("Savings database error:", error)
+
+        raise HTTPException(
+            status_code=500,
+            detail="Database savings analysis failed."
+        )
+
+
+
+
+@app.post("/import/phonepe-statement")
+async def import_phonepe_statement(file: UploadFile = File(...)):
+
+    if not file.filename.lower().endswith(".pdf"):
+        raise HTTPException(
+            status_code=400,
+            detail="Please upload a PDF file."
+        )
+
+    pdf_bytes = await file.read()
+
+    if not pdf_bytes.startswith(b"%PDF-"):
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid PDF file."
+        )
+
+    try:
+        # Extract and classify transactions
+        result = process_phonepe_statement(pdf_bytes)
+
+        transactions = result["transactions"]
+
+        if not transactions:
+            raise HTTPException(
+                status_code=400,
+                detail="No transactions extracted."
+            )
+
+        # Generate PDF directly in memory
+        pdf_buffer = generate_statement_pdf(transactions)
+
+        return StreamingResponse(
+            pdf_buffer,
+            media_type="application/pdf",
+            headers={
+                "Content-Disposition":
+                'attachment; filename="SmartSpend_Transaction_Report.pdf"'
+            }
+        )
+
+    except HTTPException:
+        raise
+
+    except Exception as error:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Statement processing failed: {str(error)}"
+        )
