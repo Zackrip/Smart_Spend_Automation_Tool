@@ -1,0 +1,482 @@
+{
+  "demoUsers": [
+    {
+      "key": "user_aarav",
+      "firstName": "Aarav",
+      "lastName": "Demo",
+      "email": "aarav.demo@smartspend.test",
+      "passwordHash": "DEMO_ONLY_NOT_A_REAL_PASSWORD_HASH",
+      "currency": "INR"
+    },
+    {
+      "key": "user_meera",
+      "firstName": "Meera",
+      "lastName": "Demo",
+      "email": "meera.demo@smartspend.test",
+      "passwordHash": "DEMO_ONLY_NOT_A_REAL_PASSWORD_HASH",
+      "currency": "INR"
+    },
+    {
+      "key": "user_ishan",
+      "firstName": "Ishan",
+      "lastName": "Demo",
+      "email": "ishan.demo@smartspend.test",
+      "passwordHash": "DEMO_ONLY_NOT_A_REAL_PASSWORD_HASH",
+      "currency": "INR"
+    },
+    {
+      "key": "user_sana",
+      "firstName": "Sana",
+      "lastName": "Demo",
+      "email": "sana.demo@smartspend.test",
+      "passwordHash": "DEMO_ONLY_NOT_A_REAL_PASSWORD_HASH",
+      "currency": "INR"
+    }
+  ],
+  "accounts": [
+    {
+      "key": "aarav_bank",
+      "userKey": "user_aarav",
+      "accountName": "Demo Bank Account",
+      "accountType": "bank",
+      "institutionName": "Demo Bank"
+    },
+    {
+      "key": "aarav_wallet",
+      "userKey": "user_aarav",
+      "accountName": "Demo Wallet",
+      "accountType": "wallet",
+      "institutionName": "Demo Wallet"
+    },
+    {
+      "key": "meera_bank",
+      "userKey": "user_meera",
+      "accountName": "Demo Bank Account",
+      "accountType": "bank",
+      "institutionName": "Demo Bank"
+    },
+    {
+      "key": "ishan_bank",
+      "userKey": "user_ishan",
+      "accountName": "Demo Bank Account",
+      "accountType": "bank",
+      "institutionName": "Demo Bank"
+    },
+    {
+      "key": "sana_bank",
+      "userKey": "user_sana",
+      "accountName": "Demo Bank Account",
+      "accountType": "bank",
+      "institutionName": "Demo Bank"
+    }
+  ],
+  "categories": [
+    {
+      "key": "salary",
+      "name": "Salary",
+      "type": "income",
+      "icon": "wallet",
+      "isSystem": true,
+      "userKey": null
+    },
+    {
+      "key": "freelance",
+      "name": "Freelance",
+      "type": "income",
+      "icon": "laptop",
+      "isSystem": true,
+      "userKey": null
+    },
+    {
+      "key": "groceries",
+      "name": "Groceries",
+      "type": "expense",
+      "icon": "shopping-basket",
+      "isSystem": true,
+      "userKey": null
+    },
+    {
+      "key": "food",
+      "name": "Food & Dining",
+      "type": "expense",
+      "icon": "utensils",
+      "isSystem": true,
+      "userKey": null
+    },
+    {
+      "key": "transport",
+      "name": "Transport",
+      "type": "expense",
+      "icon": "bus",
+      "isSystem": true,
+      "userKey": null
+    },
+    {
+      "key": "bills",
+      "name": "Bills & Utilities",
+      "type": "expense",
+      "icon": "receipt",
+      "isSystem": true,
+      "userKey": null
+    },
+    {
+      "key": "shopping",
+      "name": "Shopping",
+      "type": "expense",
+      "icon": "shopping-bag",
+      "isSystem": true,
+      "userKey": null
+    },
+    {
+      "key": "entertainment",
+      "name": "Entertainment",
+      "type": "expense",
+      "icon": "film",
+      "isSystem": true,
+      "userKey": null
+    },
+    {
+      "key": "health",
+      "name": "Health",
+      "type": "expense",
+      "icon": "heart-pulse",
+      "isSystem": true,
+      "userKey": null
+    },
+    {
+      "key": "education",
+      "name": "Education",
+      "type": "expense",
+      "icon": "book-open",
+      "isSystem": true,
+      "userKey": null
+    },
+    {
+      "key": "rent",
+      "name": "Rent",
+      "type": "expense",
+      "icon": "house",
+      "isSystem": true,
+      "userKey": null
+    }
+  ],
+  "monthlyProfiles": [
+    {
+      "userKey": "user_aarav",
+      "accountKey": "aarav_bank",
+      "walletKey": "aarav_wallet",
+      "monthlyIncome": 25000,
+      "monthlyExpenses": {
+        "groceries": 2200,
+        "food": 1600,
+        "transport": 900,
+        "bills": 1200,
+        "shopping": 1200,
+        "entertainment": 600,
+        "health": 400,
+        "education": 800,
+        "rent": 6500
+      },
+      "groceryAmountsByMonth": [
+        2100,
+        2200,
+        2300,
+        2200,
+        2400,
+        6200
+      ],
+      "incomeExtra": {
+        "freelance": 1500
+      }
+    },
+    {
+      "userKey": "user_meera",
+      "accountKey": "meera_bank",
+      "walletKey": null,
+      "monthlyIncome": 32000,
+      "monthlyExpenses": {
+        "groceries": 3000,
+        "food": 1800,
+        "transport": 1200,
+        "bills": 1800,
+        "shopping": 1800,
+        "entertainment": 900,
+        "health": 700,
+        "education": 1200,
+        "rent": 9000
+      },
+      "groceryAmountsByMonth": [
+        2900,
+        3100,
+        3000,
+        3200,
+        3000,
+        3100
+      ],
+      "incomeExtra": {
+        "freelance": 0
+      }
+    },
+    {
+      "userKey": "user_ishan",
+      "accountKey": "ishan_bank",
+      "walletKey": null,
+      "monthlyIncome": 22000,
+      "monthlyExpenses": {
+        "groceries": 1800,
+        "food": 1300,
+        "transport": 1000,
+        "bills": 1000,
+        "shopping": 900,
+        "entertainment": 500,
+        "health": 300,
+        "education": 1500,
+        "rent": 5500
+      },
+      "groceryAmountsByMonth": [
+        1750,
+        1800,
+        1900,
+        1800,
+        1850,
+        1950
+      ],
+      "incomeExtra": {
+        "freelance": 2500
+      }
+    },
+    {
+      "userKey": "user_sana",
+      "accountKey": "sana_bank",
+      "walletKey": null,
+      "monthlyIncome": 28000,
+      "monthlyExpenses": {
+        "groceries": 2500,
+        "food": 1500,
+        "transport": 1000,
+        "bills": 1500,
+        "shopping": 1500,
+        "entertainment": 700,
+        "health": 500,
+        "education": 1000,
+        "rent": 7500
+      },
+      "groceryAmountsByMonth": [
+        2400,
+        2500,
+        2600,
+        2500,
+        2700,
+        2600
+      ],
+      "incomeExtra": {
+        "freelance": 1000
+      }
+    }
+  ],
+  "budgets": [
+    {
+      "userKey": "user_aarav",
+      "categoryKey": "groceries",
+      "amountLimit": 3000
+    },
+    {
+      "userKey": "user_aarav",
+      "categoryKey": "food",
+      "amountLimit": 2000
+    },
+    {
+      "userKey": "user_aarav",
+      "categoryKey": "transport",
+      "amountLimit": 1200
+    },
+    {
+      "userKey": "user_aarav",
+      "categoryKey": "shopping",
+      "amountLimit": 1500
+    },
+    {
+      "userKey": "user_meera",
+      "categoryKey": "groceries",
+      "amountLimit": 3500
+    },
+    {
+      "userKey": "user_meera",
+      "categoryKey": "food",
+      "amountLimit": 2200
+    },
+    {
+      "userKey": "user_ishan",
+      "categoryKey": "groceries",
+      "amountLimit": 2500
+    },
+    {
+      "userKey": "user_sana",
+      "categoryKey": "groceries",
+      "amountLimit": 3000
+    }
+  ],
+  "savingsGoals": [
+    {
+      "userKey": "user_aarav",
+      "name": "Emergency Fund",
+      "targetAmount": 50000,
+      "currentAmount": 12000,
+      "targetDate": "2027-06-30",
+      "status": "active"
+    },
+    {
+      "userKey": "user_aarav",
+      "name": "New Laptop",
+      "targetAmount": 70000,
+      "currentAmount": 18000,
+      "targetDate": "2027-08-31",
+      "status": "active"
+    },
+    {
+      "userKey": "user_meera",
+      "name": "Travel Fund",
+      "targetAmount": 40000,
+      "currentAmount": 15000,
+      "targetDate": "2027-04-30",
+      "status": "active"
+    },
+    {
+      "userKey": "user_ishan",
+      "name": "Emergency Fund",
+      "targetAmount": 30000,
+      "currentAmount": 7000,
+      "targetDate": "2027-12-31",
+      "status": "active"
+    },
+    {
+      "userKey": "user_sana",
+      "name": "Course Fund",
+      "targetAmount": 25000,
+      "currentAmount": 9000,
+      "targetDate": "2027-05-31",
+      "status": "active"
+    }
+  ],
+  "recurringPayments": [
+    {
+      "userKey": "user_aarav",
+      "categoryKey": "rent",
+      "name": "Monthly rent",
+      "expectedAmount": 6500,
+      "frequency": "monthly",
+      "nextDueDate": "2026-11-01",
+      "status": "active"
+    },
+    {
+      "userKey": "user_aarav",
+      "categoryKey": "bills",
+      "name": "Mobile and internet",
+      "expectedAmount": 1200,
+      "frequency": "monthly",
+      "nextDueDate": "2026-11-05",
+      "status": "active"
+    },
+    {
+      "userKey": "user_meera",
+      "categoryKey": "rent",
+      "name": "Monthly rent",
+      "expectedAmount": 9000,
+      "frequency": "monthly",
+      "nextDueDate": "2026-11-01",
+      "status": "active"
+    },
+    {
+      "userKey": "user_ishan",
+      "categoryKey": "rent",
+      "name": "Monthly rent",
+      "expectedAmount": 5500,
+      "frequency": "monthly",
+      "nextDueDate": "2026-11-01",
+      "status": "active"
+    },
+    {
+      "userKey": "user_sana",
+      "categoryKey": "rent",
+      "name": "Monthly rent",
+      "expectedAmount": 7500,
+      "frequency": "monthly",
+      "nextDueDate": "2026-11-01",
+      "status": "active"
+    }
+  ],
+  "insights": [
+    {
+      "userKey": "user_aarav",
+      "insightType": "anomaly",
+      "title": "Unusual grocery spending (demo)",
+      "description": "Demo alert: grocery spending in June is much higher than the previous months. This is synthetic test data, not a real financial assessment.",
+      "severity": "high",
+      "metadata": {
+        "category": "Groceries",
+        "month": "2026-06",
+        "demo": true
+      }
+    },
+    {
+      "userKey": "user_aarav",
+      "insightType": "overspending",
+      "title": "Grocery budget exceeded (demo)",
+      "description": "Demo alert: grocery spending exceeds the configured monthly grocery budget in June.",
+      "severity": "warning",
+      "metadata": {
+        "category": "Groceries",
+        "month": "2026-06",
+        "demo": true
+      }
+    },
+    {
+      "userKey": "user_meera",
+      "insightType": "saving_opportunity",
+      "title": "Savings goal reminder (demo)",
+      "description": "Demo reminder to review progress toward the Travel Fund goal.",
+      "severity": "info",
+      "metadata": {
+        "goal": "Travel Fund",
+        "demo": true
+      }
+    },
+    {
+      "userKey": "user_ishan",
+      "insightType": "forecast",
+      "title": "Monthly expense forecast example (demo)",
+      "description": "Placeholder example insight for testing the UI. Replace with a calculated forecast after the forecasting module is built.",
+      "severity": "info",
+      "metadata": {
+        "demo": true
+      }
+    }
+  ],
+  "conversations": [
+    {
+      "key": "aarav_chat",
+      "userKey": "user_aarav",
+      "title": "Demo spending review"
+    }
+  ],
+  "messages": [
+    {
+      "conversationKey": "aarav_chat",
+      "role": "user",
+      "content": "Why were my grocery expenses higher in June? (synthetic demo message)"
+    },
+    {
+      "conversationKey": "aarav_chat",
+      "role": "assistant",
+      "content": "This demo dataset contains an intentionally high grocery expense in June so SmartSpend AI can test anomaly detection. This is not a real financial conclusion."
+    }
+  ],
+  "transactionGeneration": {
+    "startMonth": "2026-01",
+    "months": 6,
+    "description": "Generate one monthly income record, optional freelance income, and category expenses for each profile and month. The first user's June groceries intentionally spike to 6200 INR.",
+    "source": "manual",
+    "expenseDay": 10,
+    "incomeDay": 1
+  }
+}
