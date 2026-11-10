@@ -1,5 +1,5 @@
 import { DataTypes } from "sequelize";
-import sequelize from "../../../automation-Bot/config/database.js";
+import {sequelize} from "../configs/database.config.js";
 
 const User = sequelize.define(
   "User",
@@ -20,9 +20,15 @@ const User = sequelize.define(
       allowNull: true,
     },
 
+    MobileNo: {
+      type: DataTypes.STRING(10),
+      allowNull: false,
+      unique: true,
+    },
+
     email: {
       type: DataTypes.STRING(255),
-      allowNull: false,
+      allowNull: true,
       unique: true,
       validate: {
         isEmail: true,
