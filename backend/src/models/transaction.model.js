@@ -36,6 +36,11 @@ const Transaction = sequelize.define('Transaction', {
         type: DataTypes.ENUM('income', 'expense', 'transfer'),
         allowNull: false
     },
+    
+    paymentMethod: {
+        type: DataTypes.ENUM('cash', 'card', 'upi', 'wallet', 'other'),
+        allowNull: false
+    },
 
     merchant: {
         type: DataTypes.STRING(200),

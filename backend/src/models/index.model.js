@@ -4,7 +4,7 @@ import sequelize from '../config/database.js';
 import User from './User.js';
 import Account from './account.js';
 import Category from './Category.js';
-import Transaction from './Transaction.model.js';
+import Transaction from './transaction.model.js';
 import Budget from './budget.js';
 import SavingsGoal from './SavingsGoal.model.js';
 import RecurringPayment from './RecurringPayment.model.js';

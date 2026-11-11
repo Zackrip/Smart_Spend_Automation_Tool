@@ -13,17 +13,20 @@ const User = sequelize.define(
     firstName: {
       type: DataTypes.STRING(100),
       allowNull: false,
+      field: "first_name",
     },
 
     lastName: {
       type: DataTypes.STRING(100),
       allowNull: true,
+      field: "last_name",
     },
 
     MobileNo: {
       type: DataTypes.STRING(10),
       allowNull: false,
       unique: true,
+      field: "mobile_no",
     },
 
     email: {

@@ -3,6 +3,8 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import nodemailer from 'nodemailer';
 import dotenv from 'dotenv';
+import { Op } from "sequelize";
+
 
 dotenv.config();
 
@@ -16,7 +18,12 @@ const register = async (req, res) => {
         .json({ message: "Please provide first name, last name, mobile number, email, and password" });
     }
 
-    const existingUser = await User.findOne({ where: { MobileNo, email } });
+    const existingUser = await User.findOne({ where: {
+        [Op.or]: [
+            { MobileNo },
+            ...(email ? [{ email }] : [])
+        ]
+    } });
     if (existingUser) {
       return res.status(400).json({ message: "User already exists" });
     }
@@ -58,4 +65,13 @@ const login = async (req, res) => {
   }
 };
 
-export default { register, login };
+const logout = async (req, res) => {
+  try {
+    // Invalidate the token on the client side by removing it from local storage or cookies
+    res.json({ message: "Logged out successfully" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export default { register, login, logout };
