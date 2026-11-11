@@ -17,65 +17,82 @@ KNOWLEDGE_PATH = DATA / "merchant_knowledge.json"
 
 
 # ==========================================
-# 2. LOAD JSON DATA
+# 2. LOAD JSON DATA SAFELY
 # ==========================================
 
-def _load(path):
-    with Path(path).open(encoding="utf-8") as file:
-        return json.load(file)
+def _load(path, default=None):
+    if default is None:
+        default = {}
+
+    try:
+        with Path(path).open("r", encoding="utf-8") as file:
+            return json.load(file)
+
+    except (FileNotFoundError, json.JSONDecodeError):
+        return default
 
 
 # ==========================================
-# 3. MATCH MERCHANT / BUSINESS KEYWORDS
+# 3. TEXT MATCHING
 # ==========================================
 
 def _match(text, rules):
 
     text_n = normalize_text(text)
+
+    if not text_n or not isinstance(rules, dict):
+        return None
+
     found = []
 
     for category, terms in rules.items():
+
+        if not isinstance(terms, dict):
+            continue
 
         for term, subcategory in terms.items():
 
             term_n = normalize_text(term)
 
-            if term_n and f" {term_n} " in f" {text_n} ":
+            if not term_n:
+                continue
 
-                found.append(
-                    (
-                        len(term_n),
-                        category,
-                        subcategory,
-                        term
-                    )
-                )
+            # Exact phrase / word-boundary matching
+            if f" {term_n} " in f" {text_n} ":
+
+                found.append({
+                    "length": len(term_n),
+                    "main_category": category,
+                    "subcategory": subcategory,
+                    "term": term
+                })
 
     if not found:
         return None
 
-    found.sort(reverse=True)
+    # Longest matching phrase gets priority.
+    longest_length = max(item["length"] for item in found)
 
-    best = found[0]
-
-    tied = [
+    best_matches = [
         item for item in found
-        if item[0] == best[0]
+        if item["length"] == longest_length
     ]
 
-    # Check whether equally strong matches conflict.
-    if len({item[1] for item in tied}) > 1:
+    # Same-strength matches across different categories
+    # should not be guessed.
+    categories = {
+        item["main_category"]
+        for item in best_matches
+    }
+
+    if len(categories) > 1:
         return {"ambiguous": True}
 
-    return {
-        "main_category": best[1],
-        "subcategory": best[2],
-        "term": best[3]
-    }
+    return best_matches[0]
 
 
 # ==========================================
-# 4. MAIN TRANSACTION CLASSIFIER
+# 4. MAIN CLASSIFIER
 # ==========================================
 
 def classify_transaction(
@@ -89,132 +106,125 @@ def classify_transaction(
     knowledge_path=KNOWLEDGE_PATH
 ):
 
-    # Load global merchant knowledge.
-    knowledge = _load(knowledge_path)
+    knowledge = _load(knowledge_path, {
+        "merchant_aliases": {},
+        "business_keywords": {}
+    })
 
     merchant = counterparty or ""
 
     combined = " ".join(
-        value
+        value.strip()
         for value in (
             merchant,
             transaction_description,
             notification_text
         )
-        if isinstance(value, str)
+        if isinstance(value, str) and value.strip()
     )
 
     # --------------------------------------
-    # PRIORITY 1: USER CONFIRMED CATEGORY
+    # PRIORITY 1: USER-CONFIRMED CATEGORY
     # --------------------------------------
 
     if user_category:
 
-        main = user_category
-        sub = user_subcategory or "Unspecified"
+        return {
+            "category": user_category,
+            "main_category": user_category,
+            "subcategory": user_subcategory or "Unspecified",
+            "classification_method": "user_confirmed",
+            "confidence": 1.0,
+            "needs_review": False
+        }
 
-        method = "user_confirmed"
-        confidence = 1.0
-        review = False
+    # --------------------------------------
+    # PRIORITY 2: PERSONAL MERCHANT MEMORY
+    # --------------------------------------
 
-    else:
+    if user_id is not None and merchant:
 
-        # --------------------------------------
-        # PRIORITY 2: PERSONAL MERCHANT MEMORY
-        # --------------------------------------
-
-        personal = None
-
-        if user_id is not None and merchant:
-
-            personal = get_user_mapping(
-                user_id=user_id,
-                merchant=merchant,
-                path=MAPPINGS_PATH
-            )
+        personal = get_user_mapping(
+            user_id=user_id,
+            merchant=merchant,
+            path=MAPPINGS_PATH
+        )
 
         if personal:
 
-            main = personal["main_category"]
-            sub = personal["subcategory"]
+            main = personal.get("main_category", "Other")
+            sub = personal.get("subcategory", "Uncategorised")
 
-            method = "personal_merchant_memory"
-            confidence = 1.0
-            review = False
-
-        else:
-
-            # --------------------------------------
-            # PRIORITY 3: GLOBAL MERCHANT ALIASES
-            # --------------------------------------
-
-            aliases = {
-                category: {
-                    alias: subcategory
-                    for alias, subcategory in values.items()
-                }
-                for category, values
-                in knowledge.get("merchant_aliases", {}).items()
+            return {
+                "category": main,
+                "main_category": main,
+                "subcategory": sub,
+                "classification_method": "personal_merchant_memory",
+                "confidence": 1.0,
+                "needs_review": False
             }
 
-            match = _match(merchant, aliases)
+    # --------------------------------------
+    # PRIORITY 3: GLOBAL MERCHANT ALIASES
+    # --------------------------------------
 
-            method = "global_merchant_alias"
+    aliases = knowledge.get("merchant_aliases", {})
 
-            # --------------------------------------
-            # PRIORITY 4: BUSINESS KEYWORDS
-            # --------------------------------------
+    match = _match(merchant, aliases)
 
-            if not match:
-
-                match = _match(
-                    combined,
-                    knowledge.get("business_keywords", {})
-                )
-
-                method = "business_keyword"
-
-            # --------------------------------------
-            # PRIORITY 5: FINAL CLASSIFICATION
-            # --------------------------------------
-
-            if match and match.get("ambiguous"):
-
-                main = "Other"
-                sub = "Uncategorised"
-
-                confidence = 0.0
-                review = True
-
-                method = "ambiguous_match"
-
-            elif match:
-
-                main = match["main_category"]
-                sub = match["subcategory"]
-
-                confidence = 0.93
-                review = False
-
-            else:
-
-                main = "Other"
-                sub = "Uncategorised"
-
-                confidence = 0.0
-                review = True
-
-                method = "unknown"
+    method = "global_merchant_alias"
 
     # --------------------------------------
-    # 6. RETURN CLASSIFICATION
+    # PRIORITY 4: BUSINESS KEYWORDS
+    # --------------------------------------
+
+    if not match:
+
+        match = _match(
+            combined,
+            knowledge.get("business_keywords", {})
+        )
+
+        method = "business_keyword"
+
+    # --------------------------------------
+    # PRIORITY 5: HANDLE MATCH RESULT
+    # --------------------------------------
+
+    if match and match.get("ambiguous"):
+
+        return {
+            "category": "Other",
+            "main_category": "Other",
+            "subcategory": "Uncategorised",
+            "classification_method": "ambiguous_match",
+            "confidence": 0.0,
+            "needs_review": True
+        }
+
+    if match:
+
+        main = match["main_category"]
+        sub = match["subcategory"]
+
+        return {
+            "category": main,
+            "main_category": main,
+            "subcategory": sub,
+            "classification_method": method,
+            "confidence": 0.93,
+            "needs_review": False
+        }
+
+    # --------------------------------------
+    # PRIORITY 6: UNKNOWN TRANSACTION
     # --------------------------------------
 
     return {
-        "category": main,
-        "main_category": main,
-        "subcategory": sub,
-        "classification_method": method,
-        "confidence": confidence,
-        "needs_review": review
+        "category": "Other",
+        "main_category": "Other",
+        "subcategory": "Uncategorised",
+        "classification_method": "unknown",
+        "confidence": 0.0,
+        "needs_review": True
     }

@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.1",
+  "schema_version": "1.0",
   "merchant_aliases": {
     "Food": {
       "swiggy": "Food Delivery",
@@ -8,9 +8,7 @@
       "domino's": "Fast Food",
       "mcdonalds": "Fast Food",
       "kfc": "Fast Food",
-      "pizza hut": "Fast Food",
-      "haldiram": "Sweets",
-      "bikanervala": "Sweets"
+      "pizza hut": "Fast Food"
     },
     "Groceries": {
       "blinkit": "Supermarket",
@@ -19,10 +17,7 @@
       "swiggy instamart": "Supermarket",
       "jiomart": "Supermarket",
       "dmart": "Supermarket",
-      "saras dairy": "Dairy",
-      "d mart": "Supermarket",
-      "reliance smart": "Supermarket",
-      "more supermarket": "Supermarket"
+      "saras dairy": "Dairy"
     },
     "Education": {
       "unacademy": "Courses",
@@ -52,8 +47,7 @@
       "flipkart": "General Shopping",
       "amazon": "General Shopping",
       "croma": "Electronics",
-      "reliance digital": "Electronics",
-      "vijay sales": "Electronics"
+      "reliance digital": "Electronics"
     },
     "Healthcare": {
       "apollo pharmacy": "Medical Store",
@@ -64,9 +58,18 @@
     "Transport": {
       "uber": "Cab",
       "ola": "Cab",
-      "rapido": "Bike/Auto",
+      "rapido": "Bike Taxi",
       "irctc": "Railway",
-      "jaipur metro": "Metro"
+      "jaipur metro": "Metro",
+      "rapido bike": "Bike Taxi",
+      "rapido auto": "Bike Taxi",
+      "rapido parcel": "Parcel Delivery",
+      "uber cab": "Cab",
+      "uber go": "Cab",
+      "ola cabs": "Cab",
+      "uber auto": "Auto",
+      "ola auto": "Auto",
+      "rapido delivery": "Parcel Delivery"
     },
     "Travel": {
       "makemytrip": "Travel Booking",
@@ -82,13 +85,6 @@
       "bharat petroleum": "Petrol",
       "hpcl": "Petrol",
       "bpcl": "Petrol"
-    },
-    "Bills": {
-      "jio": "Mobile Recharge",
-      "airtel": "Mobile Recharge",
-      "vi": "Mobile Recharge",
-      "vodafone idea": "Mobile Recharge",
-      "bsnl": "Mobile Recharge"
     }
   },
   "business_keywords": {
@@ -125,22 +121,10 @@
       "tea stall": "Snacks",
       "chai": "Snacks",
       "sweet caterers": "Sweets",
-      "sweets shop": "Sweets",
       "misthan bhandar": "Sweets",
-      "mishtan bhandar": "Sweets",
-      "mithai shop": "Sweets",
       "bakers": "Bakery",
-      "cake shop": "Bakery",
-      "refreshment": "Snacks",
-      "refreshments": "Snacks",
-      "refreshmental": "Snacks",
       "fast food": "Fast Food",
-      "chinese fast food": "Fast Food",
-      "fast food take away": "Fast Food",
-      "chaat bhandar": "Street Food",
-      "food caterers": "Food Delivery",
-      "sweet caters": "Sweets",
-      "sweet catters": "Sweets"
+      "chinese fast food": "Fast Food"
     },
     "Groceries": {
       "departmental store": "Departmental Store",
@@ -163,29 +147,10 @@
       "milk store": "Dairy",
       "ration shop": "Kirana",
       "departmentel store": "Departmental Store",
-      "departmental and general store": "Departmental Store",
-      "departmental store and general store": "Departmental Store",
-      "general stores": "General Store",
       "kirana store": "Kirana",
-      "kirana shop": "Kirana",
-      "provision shop": "Kirana",
-      "grocery store": "Supermarket",
-      "grocery shop": "Supermarket",
-      "sabji mandi": "Vegetables",
-      "sabzi mandi": "Vegetables",
-      "vegetable shop": "Vegetables",
       "fruit bhandar": "Fruits",
-      "fruits bhandar": "Fruits",
-      "fruit and vegetables": "Fruits",
-      "fruits and vegetables": "Fruits",
-      "vegetable and fruit": "Vegetables",
-      "dairy products": "Dairy",
-      "departmental": "Departmental Store",
-      "departmentel": "Departmental Store",
-      "fruitbhandar": "Fruits",
-      "vegetablebhandar": "Vegetables",
-      "sabjibhandar": "Vegetables",
-      "sabzibhandar": "Vegetables"
+      "fruits and vegetables": "Vegetables",
+      "vegetable shop": "Vegetables"
     },
     "Education": {
       "stationer": "Stationery",
@@ -213,13 +178,7 @@
       "clinic": "Doctor",
       "diagnostic": "Diagnostic",
       "pathology": "Diagnostic",
-      "medical general store": "Medical Store",
-      "medical and general store": "Medical Store",
-      "medical shop": "Medical Store",
-      "medical": "Medical Store",
-      "chemist shop": "Medical Store",
-      "medicine shop": "Medical Store",
-      "drug store": "Medical Store"
+      "medical": "Medical Store"
     },
     "Shopping": {
       "garments": "Clothing",
@@ -232,24 +191,10 @@
       "mobile repair": "Electronics",
       "mobile shop": "Electronics",
       "cosmetics": "Cosmetics",
-      "jewellery shop": "Jewellery",
-      "jewellery store": "Jewellery",
-      "jewelry": "Jewellery",
-      "diamond jewellers": "Jewellery",
-      "diamond jewellery": "Jewellery",
-      "diamond shop": "Jewellery",
-      "gems and jewellery": "Jewellery",
-      "electrical shop": "Electronics",
-      "electrical store": "Electronics",
       "electricals": "Electronics",
-      "electronics shop": "Electronics",
-      "electronics store": "Electronics",
-      "electronic store": "Electronics",
-      "battery shop": "Electronics",
-      "inverter shop": "Electronics",
-      "mobile store": "Electronics",
-      "diamond": "Jewellery",
-      "elec": "Electronics"
+      "electrical shop": "Electronics",
+      "electric store": "Electronics",
+      "diamond": "Jewellery"
     },
     "Transport": {
       "taxi": "Cab",
@@ -277,27 +222,39 @@
     "Bills": {
       "electricity bill": "Electricity",
       "electricity payment": "Electricity",
-      "power bill": "Electricity",
       "mobile recharge": "Mobile Recharge",
       "mobile bill": "Mobile Recharge",
-      "prepaid recharge": "Mobile Recharge",
-      "postpaid bill": "Mobile Recharge",
-      "phone recharge": "Mobile Recharge",
-      "internet bill": "Internet",
+      "recharge": "Mobile Recharge",
       "broadband bill": "Internet",
-      "wifi bill": "Internet",
-      "gas bill": "Gas",
-      "lpg booking": "Gas",
-      "dth recharge": "DTH",
-      "dish tv recharge": "DTH"
+      "internet bill": "Internet"
     }
   },
-  "notes": [
-    "Expanded top-seven business classification rules for Indian merchant narrations.",
-    "Specific multi-word phrases should take priority over generic terms.",
-    "Local merchant names are not globally hard-coded; use per-user merchant memory for those.",
-    "A person name alone must not be assigned a business category.",
-    "The word medical is a useful signal in this statement dataset, but review if the narration conflicts.",
-    "Utility bill terms map to Bills; merchant brand alone does not prove a particular bill type."
-  ]
+  "personal_transfer_signals": {
+    "outgoing_phrases": [
+      "paid to",
+      "sent to",
+      "transferred to",
+      "upi to",
+      "payment to"
+    ],
+    "incoming_phrases": [
+      "received from",
+      "credited by",
+      "received via upi",
+      "upi from"
+    ],
+    "self_transfer_phrases": [
+      "self transfer",
+      "own account",
+      "transfer to own account",
+      "between my accounts"
+    ],
+    "p2p_indicators": [
+      "upi",
+      "vpa",
+      "person",
+      "individual"
+    ],
+    "warning": "A person's name alone is not proof of a personal transfer or relationship."
+  }
 }

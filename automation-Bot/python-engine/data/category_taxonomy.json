@@ -55,7 +55,9 @@
     "Bus",
     "Railway",
     "Parking",
-    "Local Transport"
+    "Local Transport",
+    "Parcel Delivery",
+    "Bike Taxi"
   ],
   "Fuel": [
     "Petrol",
@@ -100,5 +102,12 @@
   ],
   "Other": [
     "Uncategorised"
+  ],
+  "Personal Transfers": [
+    "Family",
+    "Friends",
+    "Person-to-Person",
+    "Self Transfer",
+    "Unknown Recipient"
   ]
 }

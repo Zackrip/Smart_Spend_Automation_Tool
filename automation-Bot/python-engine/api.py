@@ -18,6 +18,8 @@ from src.savings_recommendations import analyze_savings_goals
 from src.notification_parser import extract_transaction
 from src.transaction_classifier import classify_transaction
 from src.transaction_type_detector import detect_transaction_type
+from src.personal_transfer_classifier import classify_personal_transfer, save_personal_contact
+from src.ride_payment_reconciliation import detect_ride_event, confirm_ride_payment
 # ==========================================
 # 1. FASTAPI INITIALIZATION
 # ==========================================
@@ -78,6 +80,22 @@ class NotificationRequest(BaseModel):
     source: Optional[str] = None
     user_category: Optional[str] = None
     user_id: Optional[int] = None
+    notification_title: Optional[str] = None
+    package_name: Optional[str] = None
+    email_sender: Optional[str] = None
+
+
+class RidePaymentConfirmationRequest(BaseModel):
+    ride_event: dict
+    payment_method: str
+    payment_status: str = "paid"
+
+
+class PersonalContactRequest(BaseModel):
+    user_id: int
+    contact_name: str
+    relationship: str
+    aliases: List[str] = []
 class CategoryFeedbackRequest(BaseModel):
     user_id: int
     merchant: str
@@ -229,62 +247,115 @@ def analyze_savings(request: SavingsRequest):
 
 @app.post("/parse/notification")
 def parse_notification(request: NotificationRequest):
-
     try:
-        # Step 1: Extract transaction information
+        # Preserve sender/title as extraction context where available.
         result = extract_transaction(
-            request.notification_text
+            request.notification_text,
+            sender=request.notification_title or request.source
         )
 
-        # Step 2: Classify the transaction
-        classification = classify_transaction(
-            counterparty=result.get("counterparty"),
+        # Service/ride detection has priority over personal-transfer detection.
+        ride = detect_ride_event(
+            notification_title=request.notification_title,
             notification_text=request.notification_text,
-            transaction_description=result.get("description"),
-            user_category=request.user_category,
-            user_id=request.user_id
+            package_name=request.package_name,
+            email_sender=request.email_sender,
+            amount=result.get("amount"),
+            event_time=result.get("transaction_date")
         )
 
-        # Detect transaction type separately from spending category.
         detected_type = detect_transaction_type(
             description=request.notification_text,
             direction=result.get("transaction_type")
         )
 
-        # Step 3: Combine extraction, category and transaction-type results.
+        if ride is not None:
+            classification = {
+                "category": ride["category"],
+                "main_category": ride["main_category"],
+                "subcategory": ride["subcategory"],
+                "classification_method": ride["classification_method"],
+                "confidence": 0.95,
+                "needs_review": ride["ride_status"] != "completed"
+            }
+            result["ride_event"] = ride
+            # Ride completion is not payment confirmation.
+            result["needs_user_confirmation"] = ride["needs_user_confirmation"]
+
+        else:
+            personal = classify_personal_transfer(
+                counterparty=result.get("counterparty"),
+                description=request.notification_text,
+                direction=result.get("transaction_type"),
+                user_id=request.user_id
+            )
+
+            if personal is not None:
+                classification = personal
+            else:
+                classification = classify_transaction(
+                    counterparty=result.get("counterparty"),
+                    notification_text=request.notification_text,
+                    transaction_description=request.notification_text,
+                    user_category=request.user_category,
+                    user_id=request.user_id
+                )
+
         result["category"] = classification["category"]
         result["main_category"] = classification["main_category"]
         result["subcategory"] = classification["subcategory"]
         result["classification_method"] = classification["classification_method"]
-        result["confidence"] = classification["confidence"]
+        result["confidence"] = classification.get("confidence", 0.0)
         result["transaction_type"] = detected_type["transaction_type"]
-        result["transaction_subtype"] = detected_type["transaction_subtype"]
-
+        result["transaction_subtype"] = (
+            ride.get("transaction_subtype", "ride_payment_pending")
+            if ride is not None
+            else classification.get("transaction_subtype", detected_type["transaction_subtype"])
+        )
         result["needs_review"] = (
             result.get("needs_review", False)
             or classification["needs_review"]
             or detected_type["transaction_type"] == "unknown"
         )
-
         result["source"] = request.source
 
-        # Step 4: Return structured information
-        return {
-            "status": "success",
-            "transaction": result
-        }
+        return {"status": "success", "transaction": result}
 
     except ValueError as error:
-        raise HTTPException(
-            status_code=400,
-            detail=str(error)
-        )
+        raise HTTPException(status_code=400, detail=str(error))
+    except Exception as error:
+        print("Notification parsing error:", error)
+        raise HTTPException(status_code=500, detail="Notification parsing failed.")
 
-    except Exception:
-        raise HTTPException(
-            status_code=500,
-            detail="Notification parsing failed."
+
+@app.post("/rides/confirm-payment")
+def confirm_ride_payment_api(request: RidePaymentConfirmationRequest):
+    try:
+        return {
+            "status": "success",
+            "ride": confirm_ride_payment(
+                request.ride_event,
+                request.payment_method,
+                request.payment_status
+            )
+        }
+    except ValueError as error:
+        raise HTTPException(status_code=400, detail=str(error))
+
+
+@app.post("/contacts")
+def create_personal_contact(request: PersonalContactRequest):
+    try:
+        saved = save_personal_contact(
+            user_id=request.user_id,
+            contact_name=request.contact_name,
+            relationship=request.relationship,
+            aliases=request.aliases
         )
+        return {"status": "success", "contact": saved}
+    except ValueError as error:
+        raise HTTPException(status_code=400, detail=str(error))
+
 
 # ==========================================
 # DATABASE-BASED ANALYSIS ENDPOINTS
