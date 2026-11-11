@@ -1,5 +1,5 @@
 import category from "../models/category.model.js";
-import { UniqueConstraintError } from "sequelize";
+import {Op, UniqueConstraintError } from "sequelize";
 
 const isDuplicate = (error) => error instanceof UniqueConstraintError;
 
@@ -16,7 +16,7 @@ const getCategories = async (req, res) => {
     if (["income", "expense"].includes(req.query.type)) {
       filter.type = req.query.type;
     }
-    const categories = await Category.findAll({
+    const categories = await category.findAll({
       where: filter,
       order: [
         ["is_system", "DESC"],

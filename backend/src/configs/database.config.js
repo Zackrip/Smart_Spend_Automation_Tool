@@ -12,13 +12,36 @@ const sequelize = new Sequelize({
     }
 );
 
+
 const connectDB = async () => {
-  try {
-    await sequelize.authenticate();
-    console.log("PostgreSQL connected ✅");
-  } catch (error) {
-    console.error("PostgreSQL connection failed ❌", error.message);
-  }
+    try {
+        await sequelize.authenticate();
+
+        console.log("PostgreSQL connected!");
+
+        const [dbInfo] = await sequelize.query(`
+            SELECT
+                current_database() AS database,
+                current_schema() AS schema,
+                current_user AS username
+        `);
+
+        console.log("DATABASE INFO:", dbInfo);
+
+        const [columns] = await sequelize.query(`
+            SELECT column_name
+            FROM information_schema.columns
+            WHERE table_name = 'users'
+            ORDER BY ordinal_position
+        `);
+
+        console.log("USERS TABLE COLUMNS:", columns);
+
+    } catch (error) {
+        console.error("Database connection failed:", error);
+        throw error;
+    }
 };
+
 
 export { sequelize, connectDB };
