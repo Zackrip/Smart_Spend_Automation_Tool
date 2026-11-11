@@ -1,0 +1,104 @@
+{
+  "Food": [
+    "Restaurant",
+    "Fast Food",
+    "Cafe",
+    "Bakery",
+    "Sweets",
+    "Snacks",
+    "Street Food",
+    "Food Delivery"
+  ],
+  "Groceries": [
+    "Departmental Store",
+    "Kirana",
+    "Vegetables",
+    "Fruits",
+    "Dairy",
+    "Supermarket",
+    "General Store"
+  ],
+  "Education": [
+    "Stationery",
+    "Books",
+    "Courses",
+    "College Fees",
+    "Coaching",
+    "Printing & Photocopy"
+  ],
+  "Entertainment": [
+    "OTT Subscription",
+    "Music Subscription",
+    "Movies",
+    "Gaming",
+    "Events"
+  ],
+  "Shopping": [
+    "Clothing",
+    "Electronics",
+    "Footwear",
+    "Jewellery",
+    "Cosmetics",
+    "General Shopping"
+  ],
+  "Healthcare": [
+    "Medical Store",
+    "Hospital",
+    "Doctor",
+    "Diagnostic",
+    "Dental"
+  ],
+  "Transport": [
+    "Cab",
+    "Auto",
+    "Metro",
+    "Bus",
+    "Railway",
+    "Parking",
+    "Local Transport"
+  ],
+  "Fuel": [
+    "Petrol",
+    "Diesel",
+    "CNG",
+    "EV Charging"
+  ],
+  "Bills": [
+    "Electricity",
+    "Mobile Recharge",
+    "Internet",
+    "Gas",
+    "DTH"
+  ],
+  "Travel": [
+    "Flights",
+    "Hotels",
+    "Travel Booking",
+    "Holiday Packages"
+  ],
+  "Personal Care": [
+    "Salon",
+    "Spa",
+    "Laundry",
+    "Grooming"
+  ],
+  "Home": [
+    "Furniture",
+    "Repairs",
+    "Home Maintenance"
+  ],
+  "Financial Services": [
+    "Bank Charges",
+    "Loan EMI",
+    "Insurance",
+    "Investments"
+  ],
+  "Government": [
+    "Taxes",
+    "Challan",
+    "Government Fees"
+  ],
+  "Other": [
+    "Uncategorised"
+  ]
+}

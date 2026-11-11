@@ -27,3 +27,14 @@ select * from users;
 select * from categories;
 select * from accounts;
 select * from transactions;
+SELECT
+    id,
+    user_id,
+    category_id,
+    amount,
+    transaction_type
+FROM transactions
+WHERE user_id = 4
+  AND transaction_type = 'expense'
+  AND amount > 0
+ORDER BY category_id, id;
