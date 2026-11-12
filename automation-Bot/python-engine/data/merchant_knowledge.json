@@ -1,0 +1,260 @@
+{
+  "schema_version": "1.0",
+  "merchant_aliases": {
+    "Food": {
+      "swiggy": "Food Delivery",
+      "zomato": "Food Delivery",
+      "dominos": "Fast Food",
+      "domino's": "Fast Food",
+      "mcdonalds": "Fast Food",
+      "kfc": "Fast Food",
+      "pizza hut": "Fast Food"
+    },
+    "Groceries": {
+      "blinkit": "Supermarket",
+      "zepto": "Supermarket",
+      "bigbasket": "Supermarket",
+      "swiggy instamart": "Supermarket",
+      "jiomart": "Supermarket",
+      "dmart": "Supermarket",
+      "saras dairy": "Dairy"
+    },
+    "Education": {
+      "unacademy": "Courses",
+      "physics wallah": "Courses",
+      "coursera": "Courses",
+      "udemy": "Courses"
+    },
+    "Entertainment": {
+      "jiohotstar": "OTT Subscription",
+      "jio hotstar": "OTT Subscription",
+      "hotstar": "OTT Subscription",
+      "netflix": "OTT Subscription",
+      "prime video": "OTT Subscription",
+      "sonyliv": "OTT Subscription",
+      "zee5": "OTT Subscription",
+      "spotify": "Music Subscription",
+      "bookmyshow": "Movies",
+      "pvr": "Movies",
+      "inox": "Movies",
+      "cinepolis": "Movies"
+    },
+    "Shopping": {
+      "meesho": "General Shopping",
+      "myntra": "Clothing",
+      "ajio": "Clothing",
+      "zudio": "Clothing",
+      "flipkart": "General Shopping",
+      "amazon": "General Shopping",
+      "croma": "Electronics",
+      "reliance digital": "Electronics"
+    },
+    "Healthcare": {
+      "apollo pharmacy": "Medical Store",
+      "medplus": "Medical Store",
+      "pharmeasy": "Medical Store",
+      "tata 1mg": "Medical Store"
+    },
+    "Transport": {
+      "uber": "Cab",
+      "ola": "Cab",
+      "rapido": "Bike Taxi",
+      "irctc": "Railway",
+      "jaipur metro": "Metro",
+      "rapido bike": "Bike Taxi",
+      "rapido auto": "Bike Taxi",
+      "rapido parcel": "Parcel Delivery",
+      "uber cab": "Cab",
+      "uber go": "Cab",
+      "ola cabs": "Cab",
+      "uber auto": "Auto",
+      "ola auto": "Auto",
+      "rapido delivery": "Parcel Delivery"
+    },
+    "Travel": {
+      "makemytrip": "Travel Booking",
+      "goibibo": "Travel Booking",
+      "ixigo": "Travel Booking",
+      "indigo": "Flights",
+      "air india": "Flights",
+      "oyo": "Hotels"
+    },
+    "Fuel": {
+      "indian oil": "Petrol",
+      "indianoil": "Petrol",
+      "bharat petroleum": "Petrol",
+      "hpcl": "Petrol",
+      "bpcl": "Petrol"
+    }
+  },
+  "business_keywords": {
+    "Food": {
+      "restaurant": "Restaurant",
+      "family restaurant": "Restaurant",
+      "dhaba": "Restaurant",
+      "dhabha": "Restaurant",
+      "bhojnalaya": "Restaurant",
+      "bhojanalaya": "Restaurant",
+      "bhojnalya": "Restaurant",
+      "cafe": "Cafe",
+      "coffee house": "Cafe",
+      "bakery": "Bakery",
+      "baker": "Bakery",
+      "sweet shop": "Sweets",
+      "sweets": "Sweets",
+      "mithai": "Sweets",
+      "misthan": "Sweets",
+      "namkeen": "Snacks",
+      "farsan": "Snacks",
+      "snacks": "Snacks",
+      "chaat": "Street Food",
+      "chat bhandar": "Street Food",
+      "golgappa": "Street Food",
+      "pani puri": "Street Food",
+      "vada pav": "Street Food",
+      "momos": "Street Food",
+      "caterers": "Food Delivery",
+      "catering": "Food Delivery",
+      "canteen": "Restaurant",
+      "mess": "Restaurant",
+      "juice corner": "Snacks",
+      "tea stall": "Snacks",
+      "chai": "Snacks",
+      "sweet caterers": "Sweets",
+      "misthan bhandar": "Sweets",
+      "bakers": "Bakery",
+      "fast food": "Fast Food",
+      "chinese fast food": "Fast Food"
+    },
+    "Groceries": {
+      "departmental store": "Departmental Store",
+      "department store": "Departmental Store",
+      "general store": "General Store",
+      "kirana": "Kirana",
+      "provision store": "Kirana",
+      "grocery": "Supermarket",
+      "groceries": "Supermarket",
+      "supermarket": "Supermarket",
+      "super market": "Supermarket",
+      "sabji bhandar": "Vegetables",
+      "sabzi bhandar": "Vegetables",
+      "vegetable": "Vegetables",
+      "vegetables": "Vegetables",
+      "fruit shop": "Fruits",
+      "fruits": "Fruits",
+      "dairy": "Dairy",
+      "milk booth": "Dairy",
+      "milk store": "Dairy",
+      "ration shop": "Kirana",
+      "departmentel store": "Departmental Store",
+      "kirana store": "Kirana",
+      "fruit bhandar": "Fruits",
+      "fruits and vegetables": "Vegetables",
+      "vegetable shop": "Vegetables"
+    },
+    "Education": {
+      "stationer": "Stationery",
+      "stationers": "Stationery",
+      "stationery": "Stationery",
+      "stationary": "Stationery",
+      "book depot": "Books",
+      "book store": "Books",
+      "bookshop": "Books",
+      "books": "Books",
+      "library": "Books",
+      "xerox": "Printing & Photocopy",
+      "photocopy": "Printing & Photocopy",
+      "printing press": "Printing & Photocopy",
+      "coaching": "Coaching",
+      "college": "College Fees",
+      "university": "College Fees",
+      "tuition": "Coaching"
+    },
+    "Healthcare": {
+      "medical store": "Medical Store",
+      "chemist": "Medical Store",
+      "pharmacy": "Medical Store",
+      "hospital": "Hospital",
+      "clinic": "Doctor",
+      "diagnostic": "Diagnostic",
+      "pathology": "Diagnostic",
+      "medical": "Medical Store"
+    },
+    "Shopping": {
+      "garments": "Clothing",
+      "clothing": "Clothing",
+      "footwear": "Footwear",
+      "jewellers": "Jewellery",
+      "jeweller": "Jewellery",
+      "jewellery": "Jewellery",
+      "electronics": "Electronics",
+      "mobile repair": "Electronics",
+      "mobile shop": "Electronics",
+      "cosmetics": "Cosmetics",
+      "electricals": "Electronics",
+      "electrical shop": "Electronics",
+      "electric store": "Electronics",
+      "diamond": "Jewellery"
+    },
+    "Transport": {
+      "taxi": "Cab",
+      "cab": "Cab",
+      "auto fare": "Auto",
+      "metro": "Metro",
+      "railway": "Railway",
+      "parking": "Parking",
+      "transportation services": "Local Transport"
+    },
+    "Fuel": {
+      "filling station": "Petrol",
+      "petrol pump": "Petrol",
+      "petrol station": "Petrol",
+      "diesel pump": "Diesel",
+      "cng station": "CNG"
+    },
+    "Entertainment": {
+      "ott subscription": "OTT Subscription",
+      "subscription": "OTT Subscription",
+      "cinema": "Movies",
+      "multiplex": "Movies",
+      "gaming": "Gaming"
+    },
+    "Bills": {
+      "electricity bill": "Electricity",
+      "electricity payment": "Electricity",
+      "mobile recharge": "Mobile Recharge",
+      "mobile bill": "Mobile Recharge",
+      "recharge": "Mobile Recharge",
+      "broadband bill": "Internet",
+      "internet bill": "Internet"
+    }
+  },
+  "personal_transfer_signals": {
+    "outgoing_phrases": [
+      "paid to",
+      "sent to",
+      "transferred to",
+      "upi to",
+      "payment to"
+    ],
+    "incoming_phrases": [
+      "received from",
+      "credited by",
+      "received via upi",
+      "upi from"
+    ],
+    "self_transfer_phrases": [
+      "self transfer",
+      "own account",
+      "transfer to own account",
+      "between my accounts"
+    ],
+    "p2p_indicators": [
+      "upi",
+      "vpa",
+      "person",
+      "individual"
+    ],
+    "warning": "A person's name alone is not proof of a personal transfer or relationship."
+  }
+}

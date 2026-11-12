@@ -1,0 +1,95 @@
+{
+  "family": {
+    "mother": [
+      "mother",
+      "mom",
+      "mommy",
+      "mum",
+      "mummy",
+      "ma",
+      "maa",
+      "mai",
+      "maiya",
+      "mataji",
+      "matarani"
+    ],
+    "father": [
+      "father",
+      "dad",
+      "daddy",
+      "papa",
+      "pops",
+      "pitaji",
+      "bapu",
+      "pita ji"
+    ],
+    "brother": [
+      "brother",
+      "bro",
+      "bhai",
+      "bhaiya",
+      "dada",
+      "didi's brother"
+    ],
+    "sister": [
+      "sister",
+      "sis",
+      "behen",
+      "bahen",
+      "didi",
+      "बहन"
+    ],
+    "grandmother": [
+      "grandmother",
+      "grandma",
+      "granny",
+      "nani",
+      "naniji",
+      "dadi",
+      "dadiji"
+    ],
+    "grandfather": [
+      "grandfather",
+      "grandpa",
+      "nana",
+      "nanaji",
+      "dadaji"
+    ],
+    "spouse": [
+      "wife",
+      "husband",
+      "spouse",
+      "patni",
+      "pati"
+    ],
+    "child": [
+      "son",
+      "daughter",
+      "beta",
+      "beti",
+      "child"
+    ]
+  },
+  "friends": {
+    "friend": [
+      "friend",
+      "friends",
+      "dost",
+      "yaar",
+      "mitra",
+      "buddy"
+    ]
+  },
+  "transfer_phrases": [
+    "paid to",
+    "payment to",
+    "upi payment to",
+    "sent to",
+    "transferred to",
+    "received from",
+    "payment from",
+    "credited by",
+    "upi to",
+    "upi from"
+  ]
+}

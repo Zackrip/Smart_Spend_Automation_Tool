@@ -1,3 +1,5 @@
+from unittest import result
+
 import pytest
 
 from src.notification_parser import extract_transaction
@@ -104,7 +106,8 @@ def test_uber_travel():
         counterparty="Uber"
     )
 
-    assert result["category"] == "Travel"
+    assert result["category"] == "Transport"
+    assert result["subcategory"] == "Cab"
 
 
 def test_dhaba_food():
