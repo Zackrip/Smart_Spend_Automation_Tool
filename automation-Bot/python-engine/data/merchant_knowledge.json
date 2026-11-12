@@ -129,6 +129,8 @@
     "Groceries": {
       "departmental store": "Departmental Store",
       "department store": "Departmental Store",
+      "Departmental": "Departmental",
+      "Department": "Departmental",
       "general store": "General Store",
       "kirana": "Kirana",
       "provision store": "Kirana",

@@ -1,13 +1,13 @@
 
+"""Conservative P2P classification with per-user confirmed contact memory."""
+
+from __future__ import annotations
+
 import json
 from pathlib import Path
 
 from src.merchant_normalizer import normalize_text
 
-
-# ==========================================
-# 1. FILE PATHS
-# ==========================================
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -15,64 +15,76 @@ RELATIONSHIP_PATH = ROOT / "data" / "relationship_aliases.json"
 CONTACTS_PATH = ROOT / "data" / "personal_contacts.json"
 
 
-# ==========================================
-# 2. JSON HELPER
-# ==========================================
+INCOMING_PHRASES = [
+    "received from",
+    "payment from",
+    "credited by",
+    "received via upi",
+    "upi from",
+]
 
-def _read_json(path, default=None):
+OUTGOING_PHRASES = [
+    "paid to",
+    "sent to",
+    "transferred to",
+    "payment to",
+    "upi to",
+]
 
-    if default is None:
-        default = {}
 
+def _read_json(path, default):
     try:
-        return json.loads(
-            Path(path).read_text(encoding="utf-8")
-        )
-
-    except (FileNotFoundError, json.JSONDecodeError):
+        return json.loads(Path(path).read_text(encoding="utf-8"))
+    except (FileNotFoundError, json.JSONDecodeError, OSError):
         return default
 
 
-# ==========================================
-# 3. TEXT MATCHING
-# ==========================================
-
-def _contains_phrase(text, phrase):
-
-    text_n = normalize_text(text)
+def _has_phrase(text, phrase):
+    text_n = f" {normalize_text(text)} "
     phrase_n = normalize_text(phrase)
 
-    if not text_n or not phrase_n:
-        return False
-
-    return f" {phrase_n} " in f" {text_n} "
+    return bool(phrase_n and f" {phrase_n} " in text_n)
 
 
-def _is_incoming(direction):
+def _flow(text, direction):
+    """Determine transfer direction from explicit wording or direction."""
 
-    return (direction or "").lower() in {
-        "credit",
-        "incoming",
-        "received"
-    }
+    if any(
+        _has_phrase(text, phrase)
+        for phrase in INCOMING_PHRASES
+    ):
+        return "incoming"
 
+    if any(
+        _has_phrase(text, phrase)
+        for phrase in OUTGOING_PHRASES
+    ):
+        return "outgoing"
 
-# ==========================================
-# 4. SAVE USER-CONFIRMED CONTACT
-# ==========================================
+    direction_value = str(direction or "").lower().strip()
+
+    if direction_value in {"credit", "income"}:
+        return "incoming"
+
+    if direction_value in {"expense", "debit"}:
+        return "outgoing"
+
+    return None
+
 
 def save_personal_contact(
     user_id,
     contact_name,
     relationship,
     aliases=None,
-    path=None
+    path=None,
 ):
+    """Save a contact only after explicit user confirmation."""
 
     if user_id is None:
         raise ValueError("user_id is required")
 
-    if not contact_name or not contact_name.strip():
+    if not isinstance(contact_name, str) or not contact_name.strip():
         raise ValueError("contact_name is required")
 
     if relationship not in {"family", "friends", "other"}:
@@ -96,25 +108,22 @@ def save_personal_contact(
             for alias in (aliases or [])
             if isinstance(alias, str) and normalize_text(alias)
         }),
-        "confirmed_by_user": True
+        "confirmed_by_user": True,
     }
 
-    store_path.parent.mkdir(
-        parents=True,
-        exist_ok=True
+    store_path.parent.mkdir(parents=True, exist_ok=True)
+
+    temp = store_path.with_suffix(".tmp")
+
+    temp.write_text(
+        json.dumps(data, indent=2, ensure_ascii=False),
+        encoding="utf-8",
     )
 
-    store_path.write_text(
-        json.dumps(data, indent=2, ensure_ascii=False),
-        encoding="utf-8"
-    )
+    temp.replace(store_path)
 
     return data[str(user_id)]["contacts"][key]
 
-
-# ==========================================
-# 5. PERSONAL TRANSFER CLASSIFIER
-# ==========================================
 
 def classify_personal_transfer(
     counterparty=None,
@@ -122,41 +131,36 @@ def classify_personal_transfer(
     direction=None,
     user_id=None,
     contacts_path=None,
-    relationship_path=None
+    relationship_path=None,
 ):
-
     """
-    Classifies personal transfers only when there is
-    stronger evidence than a generic 'paid to' phrase.
+    Classify personal transfers conservatively.
 
-    Accepted evidence:
-    1. Explicit self-transfer wording.
-    2. Exact match with a user-confirmed contact.
-    3. Explicit relationship alias with transfer wording.
+    Confirmed contacts are automatically classified.
+    Unknown counterparties are returned as reviewable P2P candidates
+    only when explicit transfer wording is present.
 
-    Unknown recipients remain Other / Needs Review.
+    A person's name alone is never sufficient evidence.
     """
 
     text = " ".join(
-        value
+        str(value)
         for value in (counterparty, description)
-        if isinstance(value, str)
+        if value
     )
 
     text_n = normalize_text(text)
-    counterparty_n = normalize_text(counterparty)
 
-    if not text_n:
-        return None
+    flow = _flow(text, direction)
 
     rel_data = _read_json(
         relationship_path or RELATIONSHIP_PATH,
-        {}
+        {},
     )
 
     contacts_data = _read_json(
         contacts_path or CONTACTS_PATH,
-        {}
+        {},
     )
 
     user_contacts = (
@@ -165,84 +169,63 @@ def classify_personal_transfer(
         else {}
     )
 
-    # --------------------------------------
-    # PRIORITY 1: EXPLICIT SELF TRANSFER
-    # --------------------------------------
+    # --------------------------------------------------
+    # 1. Explicit self-transfer detection
+    # --------------------------------------------------
 
-    self_phrases = [
+    self_phrases = rel_data.get("self_transfer_phrases") or [
         "self transfer",
         "own account",
         "transfer to own account",
-        "between my accounts"
+        "between my accounts",
     ]
 
     if any(
-        _contains_phrase(text_n, phrase)
+        _has_phrase(text_n, phrase)
         for phrase in self_phrases
     ):
-
         return {
             "category": "Personal Transfers",
             "main_category": "Personal Transfers",
             "subcategory": "Self Transfer",
             "transaction_subtype": "self_transfer",
             "classification_method": "explicit_self_transfer_phrase",
-            "confidence": 0.98,
-            "needs_review": False
+            "confidence": 0.99,
+            "needs_review": False,
+            "is_internal_transfer": True,
+            "exclude_from_expense_total": True,
+            "exclude_from_income_total": True,
+            "transaction_type": "transfer",
         }
 
-    # --------------------------------------
-    # PRIORITY 2: TRANSFER LANGUAGE
-    # --------------------------------------
-
-    transfer_phrases = rel_data.get(
-        "transfer_phrases",
-        [
-            "paid to",
-            "payment to",
-            "upi payment to",
-            "sent to",
-            "transferred to",
-            "received from",
-            "payment from",
-            "credited by",
-            "upi to",
-            "upi from",
-            "upi transfer"
-        ]
-    )
-
-    has_transfer_language = any(
-        _contains_phrase(text_n, phrase)
-        for phrase in transfer_phrases
-    )
-
-    if not has_transfer_language:
+    # No transfer direction means no P2P classification.
+    if flow is None:
         return None
 
-    # --------------------------------------
-    # PRIORITY 3: USER-CONFIRMED CONTACT
-    # --------------------------------------
+    # --------------------------------------------------
+    # 2. Confirmed contact memory (user-specific)
+    # --------------------------------------------------
+
+    cp = normalize_text(counterparty or "")
 
     for key, details in user_contacts.items():
 
-        if not details.get("confirmed_by_user", False):
-            continue
-
-        candidates = {
+        aliases = {
             normalize_text(key),
-            normalize_text(details.get("display_name", ""))
+            normalize_text(details.get("display_name", "")),
         }
 
-        candidates.update(
+        aliases.update(
             normalize_text(alias)
             for alias in details.get("aliases", [])
         )
 
-        candidates.discard("")
+        aliases.discard("")
 
-        # Match the actual counterparty, not the entire narration.
-        if counterparty_n in candidates:
+        if cp and cp in aliases:
+
+            if not details.get("confirmed_by_user", False):
+                continue
 
             relationship = details.get("relationship")
 
@@ -259,58 +242,79 @@ def classify_personal_transfer(
                 "category": "Personal Transfers",
                 "main_category": "Personal Transfers",
                 "subcategory": subcategory,
-                "transaction_subtype": (
-                    "p2p_incoming"
-                    if _is_incoming(direction)
-                    else "p2p_outgoing"
-                ),
+                "transaction_subtype": f"p2p_{flow}",
                 "classification_method": "user_confirmed_contact",
-                "confidence": 0.98,
-                "needs_review": False
+                "confidence": 0.99,
+                "needs_review": False,
+                "counterparty_name": (
+                    details.get("display_name") or counterparty
+                ),
+                "transaction_type": (
+                    "credit" if flow == "incoming" else "expense"
+                ),
+                "exclude_from_income_total": flow == "incoming",
+                "exclude_from_expense_total": False,
+                "is_internal_transfer": False,
+                "is_p2p": True,
             }
 
-    # --------------------------------------
-    # PRIORITY 4: EXPLICIT RELATIONSHIP ALIAS
-    # --------------------------------------
+    # --------------------------------------------------
+    # 3. Explicit relationship aliases
+    # --------------------------------------------------
 
-    for relationship in ("family", "friends"):
+    for relationship_group in ("family", "friends"):
 
-        relationship_data = rel_data.get(
-            relationship, {}
-        )
+        group = rel_data.get(relationship_group, {})
 
-        for aliases in relationship_data.values():
+        for _, aliases in group.items():
 
-            for alias in aliases:
+            if any(
+                _has_phrase(text_n, alias)
+                for alias in aliases
+            ):
 
-                if _contains_phrase(text_n, alias):
-
-                    subcategory = (
+                return {
+                    "category": "Personal Transfers",
+                    "main_category": "Personal Transfers",
+                    "subcategory": (
                         "Family"
-                        if relationship == "family"
+                        if relationship_group == "family"
                         else "Friends"
-                    )
+                    ),
+                    "transaction_subtype": f"p2p_{flow}",
+                    "classification_method": "explicit_relationship_term",
+                    "confidence": 0.90,
+                    "needs_review": False,
+                    "transaction_type": (
+                        "credit" if flow == "incoming" else "expense"
+                    ),
+                    "exclude_from_income_total": flow == "incoming",
+                    "exclude_from_expense_total": False,
+                    "is_internal_transfer": False,
+                    "is_p2p": True,
+                }
 
-                    return {
-                        "category": "Personal Transfers",
-                        "main_category": "Personal Transfers",
-                        "subcategory": subcategory,
-                        "transaction_subtype": (
-                            "p2p_incoming"
-                            if _is_incoming(direction)
-                            else "p2p_outgoing"
-                        ),
-                        "classification_method": "explicit_relationship_term",
-                        "confidence": 0.88,
-                        "needs_review": False
-                    }
+    # --------------------------------------------------
+    # 4. Unknown P2P candidate
+    # --------------------------------------------------
 
-    # --------------------------------------
-    # PRIORITY 5: UNKNOWN RECIPIENT
-    # --------------------------------------
+    # Explicit transfer wording is required.
+    # Do not classify a name without transfer evidence.
 
-    # A generic 'paid to' or 'payment to' phrase does not
-    # prove that the recipient is a person.
-    # Let the main classifier keep it as Other / Review.
-
-    return None
+    return {
+        "category": "Personal Transfers",
+        "main_category": "Personal Transfers",
+        "subcategory": "Person-to-Person",
+        "transaction_subtype": f"p2p_{flow}",
+        "classification_method": "unknown_person_transfer",
+        "confidence": 0.65,
+        "needs_review": True,
+        "counterparty_name": counterparty,
+        "transaction_type": (
+            "credit" if flow == "incoming" else "expense"
+        ),
+        "exclude_from_income_total": flow == "incoming",
+        "exclude_from_expense_total": False,
+        "is_internal_transfer": False,
+        "is_p2p": True,
+    }
