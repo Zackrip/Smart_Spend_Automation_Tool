@@ -7,7 +7,9 @@ from src.phonepe_special_rules import (
     detect_phonepe_special_case,
     detect_payment_source,
 )
-
+from src.recurring_payment_detector import (
+    annotate_recurring_payment_candidates
+)
 def _base_classification():
     return {
         "category": "Other",
@@ -18,9 +20,11 @@ def _base_classification():
         "needs_review": True,
     }
 
-def process_phonepe_statement(pdf_bytes, user_id=None):
-    """Parse and classify PhonePe statement rows. Does not persist to PostgreSQL."""
-    transactions = extract_phonepe_transactions(pdf_bytes)
+def process_phonepe_transactions(transactions, user_id=None):
+    """Classify already-parsed transactions from any supported PhonePe format."""
+    from src.statement_schema import normalize_statement_transactions
+
+    transactions = normalize_statement_transactions(transactions)
     processed_transactions = []
 
     for transaction in transactions:
@@ -116,6 +120,10 @@ def process_phonepe_statement(pdf_bytes, user_id=None):
             "p2p_incoming", "p2p_outgoing"
         }
         processed_transactions.append(transaction)
+            # Detect possible recurring subscriptions
+        annotate_recurring_payment_candidates(
+        processed_transactions
+    )
 
     total_expenses = sum(
         float(t.get("amount") or 0)

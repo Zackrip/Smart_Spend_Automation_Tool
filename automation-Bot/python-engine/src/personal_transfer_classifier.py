@@ -47,7 +47,7 @@ def _has_phrase(text, phrase):
 
 
 def _flow(text, direction):
-    """Determine transfer direction from explicit wording or direction."""
+    """Determine transfer direction only from explicit transfer wording."""
 
     if any(
         _has_phrase(text, phrase)
@@ -61,15 +61,10 @@ def _flow(text, direction):
     ):
         return "outgoing"
 
-    direction_value = str(direction or "").lower().strip()
-
-    if direction_value in {"credit", "income"}:
-        return "incoming"
-
-    if direction_value in {"expense", "debit"}:
-        return "outgoing"
-
+    # Debit/credit tells us money movement, not whether
+    # the transaction is a personal transfer.
     return None
+
 
 
 def save_personal_contact(

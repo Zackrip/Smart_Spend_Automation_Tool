@@ -76,3 +76,12 @@ def test_user_contact_memory_is_private(tmp_path):
     assert user_one["subcategory"] == "Friends"
     assert user_two["subcategory"] == "Person-to-Person"
     assert user_two["needs_review"] is True
+def test_debit_direction_alone_does_not_make_personal_transfer():
+
+    result = classify_personal_transfer(
+        counterparty="Google",
+        description="Google",
+        direction="debit"
+    )
+
+    assert result is None

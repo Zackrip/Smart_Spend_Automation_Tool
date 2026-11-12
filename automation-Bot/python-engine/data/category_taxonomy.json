@@ -110,5 +110,10 @@
     "Person-to-Person",
     "Self Transfer",
     "Unknown Recipient"
+  ],
+  "Subscriptions": [
+    "Cloud Storage",
+    "Software & Productivity",
+    "Other Subscription"
   ]
 }
