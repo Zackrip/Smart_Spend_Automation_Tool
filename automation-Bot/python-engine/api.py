@@ -2,7 +2,9 @@ from fastapi import FastAPI, HTTPException,UploadFile, File
 from src.merchant_learning import record_user_feedback
 from fastapi.responses import StreamingResponse
 from src.statement_pdf_report import generate_statement_pdf
-from src.statement_processor import process_phonepe_statement
+from src.statement_processor import process_phonepe_statement, process_phonepe_transactions
+from src.phonepe_csv_parser import extract_phonepe_csv_transactions
+from src.statement_api import build_statement_overview
 from pydantic import BaseModel, Field
 from datetime import date, datetime
 from typing import List, Optional
@@ -651,53 +653,111 @@ async def import_phonepe_statement(
     file: UploadFile = File(...),
     user_id: Optional[int] = None
 ):
-
-    if not file.filename.lower().endswith(".pdf"):
+    """
+    Upload a PhonePe PDF or CSV statement.
+    Returns a JSON financial overview and the classified transactions.
+    """
+    filename = (file.filename or "").lower()
+    if not (filename.endswith(".pdf") or filename.endswith(".csv")):
         raise HTTPException(
             status_code=400,
-            detail="Please upload a PDF file."
+            detail="Please upload a PhonePe PDF or CSV statement."
         )
 
-    pdf_bytes = await file.read()
-
-    if not pdf_bytes.startswith(b"%PDF-"):
-        raise HTTPException(
-            status_code=400,
-            detail="Invalid PDF file."
-        )
+    file_bytes = await file.read()
+    if not file_bytes:
+        raise HTTPException(status_code=400, detail="The uploaded file is empty.")
 
     try:
-        # Extract and classify transactions
-        result = process_phonepe_statement(pdf_bytes, user_id=user_id)
+        if filename.endswith(".pdf"):
+            if not file_bytes.startswith(b"%PDF-"):
+                raise HTTPException(status_code=400, detail="Invalid PDF file.")
+            result = process_phonepe_statement(file_bytes, user_id=user_id)
+            source_format = "pdf"
+        else:
+            # The CSV parser detects PhonePe's metadata preamble and header.
+            parsed_transactions = extract_phonepe_csv_transactions(file_bytes)
+            result = process_phonepe_transactions(
+                parsed_transactions,
+                user_id=user_id
+            )
+            source_format = "csv"
 
-        transactions = result["transactions"]
+        if not result.get("transactions"):
+            raise HTTPException(status_code=400, detail="No transactions extracted.")
 
-        if not transactions:
-            raise HTTPException(
-                status_code=400,
-                detail="No transactions extracted."
+        return {
+            "status": "success",
+            "source_format": source_format,
+            **build_statement_overview(result)
+        }
+
+    except HTTPException:
+        raise
+    except (ValueError, UnicodeDecodeError) as error:
+        raise HTTPException(status_code=400, detail=str(error))
+    except Exception:
+        # Keep internal exception details out of the public API response.
+        raise HTTPException(
+            status_code=500,
+            detail="Statement processing failed. Please check the file and try again."
+        )
+
+
+@app.post("/import/phonepe-statement/report")
+async def download_phonepe_statement_report(
+    file: UploadFile = File(...),
+    user_id: Optional[int] = None
+):
+    """Generate a PDF report from the uploaded PhonePe PDF or CSV statement."""
+    filename = (file.filename or "").lower()
+    if not (filename.endswith(".pdf") or filename.endswith(".csv")):
+        raise HTTPException(
+            status_code=400,
+            detail="Please upload a PhonePe PDF or CSV statement."
+        )
+
+    file_bytes = await file.read()
+    if not file_bytes:
+        raise HTTPException(status_code=400, detail="The uploaded file is empty.")
+
+    try:
+        if filename.endswith(".pdf"):
+            if not file_bytes.startswith(b"%PDF-"):
+                raise HTTPException(status_code=400, detail="Invalid PDF file.")
+            result = process_phonepe_statement(file_bytes, user_id=user_id)
+        else:
+            parsed_transactions = extract_phonepe_csv_transactions(file_bytes)
+            result = process_phonepe_transactions(
+                parsed_transactions,
+                user_id=user_id
             )
 
-        # Generate PDF directly in memory
-        pdf_buffer = generate_statement_pdf(transactions, branding="Paisora")
+        if not result.get("transactions"):
+            raise HTTPException(status_code=400, detail="No transactions extracted.")
 
+        pdf_buffer = generate_statement_pdf(
+            result["transactions"],
+            branding="Paisora"
+        )
         return StreamingResponse(
             pdf_buffer,
             media_type="application/pdf",
             headers={
                 "Content-Disposition":
-                'attachment; filename="Paisora_Transaction_Report.pdf"'
+                    'attachment; filename="Paisora_Transaction_Report.pdf"'
             }
         )
-
     except HTTPException:
         raise
-
-    except Exception as error:
+    except (ValueError, UnicodeDecodeError) as error:
+        raise HTTPException(status_code=400, detail=str(error))
+    except Exception:
         raise HTTPException(
             status_code=500,
-            detail=f"Statement processing failed: {str(error)}"
+            detail="Statement report generation failed. Please try again."
         )
+
 @app.post("/classify/feedback")
 def save_category_feedback(request: CategoryFeedbackRequest):
 

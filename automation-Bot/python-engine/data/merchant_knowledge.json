@@ -45,6 +45,7 @@
       "ajio": "Clothing",
       "zudio": "Clothing",
       "flipkart": "General Shopping",
+      "ekart": "General Shopping",
       "amazon": "General Shopping",
       "croma": "Electronics",
       "reliance digital": "Electronics"
@@ -85,6 +86,12 @@
       "bharat petroleum": "Petrol",
       "hpcl": "Petrol",
       "bpcl": "Petrol"
+    },
+    "Subscriptions": {
+      "google one": "Cloud Storage",
+      "google storage": "Cloud Storage",
+      "google drive storage": "Cloud Storage",
+      "google workspace": "Software & Productivity"
     }
   },
   "business_keywords": {
@@ -229,6 +236,14 @@
       "recharge": "Mobile Recharge",
       "broadband bill": "Internet",
       "internet bill": "Internet"
+    },
+    "Subscriptions": {
+      "cloud storage": "Cloud Storage",
+      "google one": "Cloud Storage",
+      "google": "Cloud Storage",
+      "google drive storage": "Cloud Storage",
+      "software subscription": "Software & Productivity",
+      "productivity software": "Software & Productivity"
     }
   },
   "personal_transfer_signals": {

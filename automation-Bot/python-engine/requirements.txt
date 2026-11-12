@@ -10,3 +10,4 @@ jupyter
 fastapi
 uvicorn
 pdfplumber
+python-multipart
