@@ -24,9 +24,11 @@ const getCategories = async (req, res) => {
       ],
       raw: true,
     });
-    res.json({ success: true, count: categories.length, data: categories });
+    return res
+      .status(200)
+      .json({ success: true, count: categories.length, data: categories });
   } catch (err) {
-    res
+    return res
       .status(500)
       .json({ success: false, message: "Could not fetch categories" });
   }
@@ -76,7 +78,121 @@ const createCategory = async (req, res) => {
   }
 };
 
+const updateCategorybyid = async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!/^[1-9]\d*$/.test(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid category ID",
+      });
+    }
+    const existing = await category.findOne({
+      where: {
+        id,
+        userId: req.user.id,
+      },
+    });
+
+    if (!existing) {
+      return res.status(404).json({
+        success: false,
+        message: "Category not found",
+      });
+    }
+
+    // 3. Allow only specific fields to be updated
+    const { name, type, icon } = req.body;
+
+    if (name !== undefined) {
+      if (typeof name !== "string" || !name.trim()) {
+        return res.status(400).json({
+          success: false,
+          message: "Category name cannot be empty",
+        });
+      }
+      existing.name = name.trim();
+    }
+
+    if (type !== undefined) {
+      if (!["income", "expense"].includes(type)) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid category type",
+        });
+      }
+      existing.type = type;
+    }
+
+    if (icon !== undefined) {
+      existing.icon = icon;
+    }
+
+    await existing.save();
+    return res.status(200).json({
+      success: true,
+      message: "Category updated successfully",
+      data: existing,
+    });
+  } catch (err) {
+    if (isDuplicate(err)) {
+      return res.status(409).json({
+        success: false,
+        message: "You already have a category with this name",
+      });
+    }
+
+    console.error("Update category error:", err);
+
+    return res.status(500).json({
+      success: false,
+      message: "Could not update category",
+    });
+  }
+};
+
+const deleteCategory = async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!/^[1-9]\d*$/.test(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid category ID",
+      });
+    }
+
+    const existing = await category.findOne({
+      where: {
+        id,
+        userId: req.user.id,
+      },
+    });
+
+    if (!existing) {
+      return res.status(404).json({
+        success: false,
+        message: "Category not found",
+      });
+    }
+
+    await existing.destroy();
+
+    return res.status(200).json({
+      success: true,
+      message: "Category deleted successfully",
+    });
+  } catch (err) {
+    console.error("Delete category error:", err);
+    return res.status(500).json({
+      success: false,
+      message: "Could not delete category",
+    });
+  }
+};
+
 export default {
   getCategories,
   createCategory,
+  updateCategorybyid,
+  deleteCategory,
 };

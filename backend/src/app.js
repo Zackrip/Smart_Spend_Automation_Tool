@@ -6,10 +6,10 @@ const app = express();
 app.use(express.json());
 
 // auth routes
-app.use('/api/auth/v1', authRoutes);
+app.use('/api/v1/auth', authRoutes);
 
 // category routes
-app.use('/api/categories/v1', categoryRoutes);
+app.use('/api/v1/categories', categoryRoutes);
 
 app.get('/', (req, res) => {
   res.send('Hello, World!');

@@ -8,5 +8,9 @@ const router = express.Router();
 router.get('/', verifyToken, categoryController.getCategories);
 // create a new category
 router.post('/create-category', verifyToken, categoryController.createCategory);
+// update a category by ID
+router.put('/update-category/:id', verifyToken, categoryController.updateCategorybyid);
+// delete a category by ID
+router.delete('/delete-category/:id', verifyToken, categoryController.deleteCategory);
 
 export default router;
