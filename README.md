@@ -58,8 +58,8 @@ Smart Spend helps you track spending, understand where your money goes, and opti
 | Layer | Technology |
 |---|---|
 | Frontend | React, Vite, Tailwind CSS, Recharts |
-| Backend | Node.js, Express.js, Mongoose |
-| Database | MongoDB (Atlas) |
+| Backend | Node.js, Express.js, Pg |
+| Database | Postgres (PgSQL) |
 | Validation | Zod |
 | Auth | JWT, bcrypt |
 | Cache and Queue | Redis, BullMQ (planned) |
@@ -71,7 +71,7 @@ Smart Spend helps you track spending, understand where your money goes, and opti
 ## Architecture
 
 ```
-React Frontend  <--REST/JWT-->  Node/Express API  <-->  MongoDB
+React Frontend  <--REST/JWT-->  Node/Express API  <-->  Postgres
                                       |
                                  Redis / BullMQ
                                       |
@@ -111,7 +111,7 @@ smart-spend/
 ### Prerequisites
 
 - Node.js 18+ and npm
-- MongoDB (local or Atlas connection string)
+- Postgres (local or PgAdmin connection string)
 - Python 3.11+ (only needed for the bot, later phases)
 
 ### Installation
@@ -161,7 +161,7 @@ Backend runs on `http://localhost:5000` and the frontend on `http://localhost:51
 
 ```env
 PORT=5000
-MONGO_URI=mongodb+srv://<user>:<password>@<cluster>/smartspend
+
 JWT_SECRET=replace_with_a_long_random_string
 JWT_EXPIRES_IN=15m
 CLIENT_URL=http://localhost:5173
