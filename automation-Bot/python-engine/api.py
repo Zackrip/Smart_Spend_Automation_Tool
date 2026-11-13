@@ -98,6 +98,13 @@ class PersonalContactRequest(BaseModel):
     contact_name: str
     relationship: str
     aliases: List[str] = []
+
+
+class TransactionIntelligenceRequest(BaseModel):
+    transactions: List[dict]
+    user_id: Optional[int] = None
+    confidence_threshold: float = Field(default=0.70, ge=0.0, le=1.0)
+
 class CategoryFeedbackRequest(BaseModel):
     user_id: int
     merchant: str
@@ -784,4 +791,32 @@ def save_category_feedback(request: CategoryFeedbackRequest):
         raise HTTPException(
             status_code=500,
             detail="Could not save category feedback."
+        )
+
+@app.post("/analyze/transaction-intelligence")
+def analyze_transaction_intelligence(request: TransactionIntelligenceRequest):
+    """Classify and enrich a supplied transaction history with Phase 4 insights."""
+    try:
+        result = process_phonepe_transactions(
+            request.transactions, user_id=request.user_id
+        )
+        return {
+            "status": "success",
+            "summary": {
+                "total_transactions": result.get("total_transactions", 0),
+                "total_expenses": result.get("total_expenses", 0),
+                "transactions_needing_review": result.get("transactions_needing_review", 0),
+            },
+            "intelligence": result.get("intelligence_summary", {}),
+            "recurring_payments": result.get("recurring_payments", []),
+            "duplicate_candidates": result.get("duplicate_candidates", []),
+            "review_queue": result.get("review_queue", []),
+            "transactions": result.get("transactions", []),
+        }
+    except ValueError as error:
+        raise HTTPException(status_code=400, detail=str(error))
+    except Exception as error:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Transaction intelligence analysis failed: {str(error)}"
         )

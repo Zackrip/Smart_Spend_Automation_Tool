@@ -30,9 +30,12 @@ def test_monthly_google_payment():
     annotate_recurring_payment_candidates(transactions)
 
     for tx in transactions:
-        assert tx["main_category"] == "Subscriptions"
-        assert tx["subcategory"] == "Other Subscription"
-        assert tx["needs_review"] is True
+        # Recurrence is a payment pattern, not proof of a subscription.
+        # Keep the original category and attach recurrence metadata only.
+        assert tx["main_category"] == "Other"
+        assert tx["subcategory"] == "Uncategorised"
+        assert tx["is_recurring_candidate"] is True
+        assert tx["recurring_frequency"] == "monthly"
 
 
 def test_two_payments_not_enough():
@@ -45,7 +48,7 @@ def test_two_payments_not_enough():
     annotate_recurring_payment_candidates(transactions)
 
     assert all(
-        tx["main_category"] == "Other"
+        not tx.get("is_recurring_candidate", False)
         for tx in transactions
     )
 

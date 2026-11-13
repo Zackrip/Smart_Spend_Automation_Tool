@@ -57,3 +57,11 @@ def test_supports_utf8_bom_and_commas_in_amount():
     transactions = extract_phonepe_csv_transactions(("\ufeff" + csv_text).encode("utf-8"))
     assert transactions[0]["amount"] == Decimal("1250.50")
  
+
+def test_csv_does_not_infer_autopay_from_payment_to_google():
+    csv_text = '''Date,Time,Transaction Details,Transaction ID,UTR,Transaction Type,Credit/debit instrument,Amount
+"Nov 10, 2026","10:44 PM","Payment to Google","OLEX2611102244439797853321","847586423146","DEBIT","Paid by XXXXXX1883","59"
+'''
+    transactions = extract_phonepe_csv_transactions(csv_text.encode("utf-8"))
+    assert transactions[0]["payment_mode"] == "unknown"
+    assert transactions[0]["is_autopay"] is None
