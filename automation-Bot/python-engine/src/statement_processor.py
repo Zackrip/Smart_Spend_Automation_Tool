@@ -7,9 +7,7 @@ from src.phonepe_special_rules import (
     detect_phonepe_special_case,
     detect_payment_source,
 )
-from src.recurring_payment_detector import (
-    annotate_recurring_payment_candidates
-)
+from src.transaction_intelligence import enrich_transaction_intelligence
 def _base_classification():
     return {
         "category": "Other",
@@ -120,10 +118,9 @@ def process_phonepe_transactions(transactions, user_id=None):
             "p2p_incoming", "p2p_outgoing"
         }
         processed_transactions.append(transaction)
-            # Detect possible recurring subscriptions
-        annotate_recurring_payment_candidates(
-        processed_transactions
-    )
+    # Phase 4: enrich with merchant identity, recurrence, duplicate detection,
+    # and confidence-based review queue. Categories are not rewritten.
+    intelligence = enrich_transaction_intelligence(processed_transactions)
 
     total_expenses = sum(
         float(t.get("amount") or 0)
@@ -166,6 +163,10 @@ def process_phonepe_transactions(transactions, user_id=None):
             if t.get("classification_method") == "person_name_transfer_candidate"
         ),
         "transactions": processed_transactions,
+        "recurring_payments": intelligence["recurring_payments"],
+        "duplicate_candidates": intelligence["duplicate_candidates"],
+        "review_queue": intelligence["review_queue"],
+        "intelligence_summary": intelligence["intelligence_summary"],
     }
 
 

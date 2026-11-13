@@ -186,6 +186,7 @@ def generate_statement_pdf(transactions, branding="Paisora"):
     for tx in transactions:
         if _kind(tx) == "Expense":
             categories[str(_value(tx, "category", default="Other"))] += _amount(tx)
+    autopay_count = sum(1 for tx in transactions if _value(tx, "payment_mode", default="unknown") == "autopay")
     review_count = sum(
         1 for tx in transactions
         if bool(_value(tx, "needs_review", "review_required", default=False))
@@ -234,7 +235,10 @@ def generate_statement_pdf(transactions, branding="Paisora"):
     # PAGE 2 — overview
     story += [
         Paragraph("Financial overview", styles["h1"]),
-        Paragraph("A snapshot of the transactions included in this statement.", styles["muted"]),
+        Paragraph(
+            f"A snapshot of the transactions included in this statement.  Auto Pay detected: {autopay_count}",
+            styles["muted"],
+        ),
         Spacer(1, 7*mm)
     ]
     cards = [
@@ -273,25 +277,27 @@ def generate_statement_pdf(transactions, branding="Paisora"):
         Paragraph("All parsed transactions are listed below. Unknown classifications are flagged for review.", styles["muted"]),
         Spacer(1, 5*mm)
     ]
-    headers = ["DATE", "MERCHANT / DESCRIPTION", "AMOUNT", "TYPE", "CATEGORY", "REVIEW"]
+    headers = ["DATE", "MERCHANT / DESCRIPTION", "AMOUNT", "TYPE", "CATEGORY", "PAYMENT MODE", "REVIEW"]
     rows = [[Paragraph(h, styles["table_head"]) for h in headers]]
     for tx in transactions:
         merchant = str(_value(tx, "merchant", "counterparty", "name", "description", default="Unknown"))
         merchant = merchant.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
         category = str(_value(tx, "category", default="Other"))
         needs_review = bool(_value(tx, "needs_review", "review_required", default=False))
+        payment_mode = str(_value(tx, "payment_mode", default="unknown")).replace("_", " ").upper()
         rows.append([
             Paragraph(_date_text(tx).replace("&", "&amp;"), styles["table_cell"]),
             Paragraph(merchant[:65], styles["table_cell"]),
             Paragraph(_money(_amount(tx)), styles["table_right"]),
             Paragraph(_kind(tx), styles["table_cell"]),
             Paragraph(category, styles["table_cell"]),
+            Paragraph(payment_mode, styles["table_cell"]),
             Paragraph("Review" if needs_review else "OK",
                       ParagraphStyle("reviewcell", fontName=FONT_BOLD, fontSize=7, textColor=GOLD if needs_review else GREEN))
         ])
     if len(rows) == 1:
-        rows.append([Paragraph("No transactions found.", styles["muted"])] + [Paragraph("", styles["muted"])]*5)
-    table = Table(rows, colWidths=[25*mm, 53*mm, 26*mm, 19*mm, 25*mm, 18*mm], repeatRows=1, hAlign="LEFT")
+        rows.append([Paragraph("No transactions found.", styles["muted"])] + [Paragraph("", styles["muted"])]*6)
+    table = Table(rows, colWidths=[19*mm, 43*mm, 22*mm, 15*mm, 22*mm, 25*mm, 20*mm], repeatRows=1, hAlign="LEFT")
     table.setStyle(TableStyle([
         ("BACKGROUND",(0,0),(-1,0),PANEL2),
         ("ROWBACKGROUNDS",(0,1),(-1,-1),[PANEL, NAVY]),

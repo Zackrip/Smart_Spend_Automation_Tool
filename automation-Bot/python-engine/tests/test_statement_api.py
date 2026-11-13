@@ -70,3 +70,30 @@ def test_empty_result_returns_empty_overview():
     assert overview["summary"]["total_transactions"] == 0
     assert overview["category_wise_expenses"] == []
     assert overview["transactions"] == []
+
+
+def test_statement_overview_counts_explicit_autopay_transactions():
+    result = {
+        "transactions": [
+            {"amount": Decimal("59"), "transaction_type": "expense", "payment_mode": "autopay", "is_autopay": True},
+            {"amount": Decimal("302"), "transaction_type": "expense", "payment_mode": "unknown", "is_autopay": None},
+        ]
+    }
+    overview = build_statement_overview(result)
+    assert overview["summary"]["autopay_transactions"] == 1
+    assert overview["summary"]["payment_mode_unknown"] == 1
+
+
+def test_pdf_autopay_badge_is_detected_by_existing_parser():
+    from src.statement_parser import parse_transaction_block
+
+    tx = parse_transaction_block([
+        "Nov 10, 2026 Payment to Google DEBIT ₹59",
+        "10:44 pm",
+        "Transaction ID OLEX2611102244439797853321",
+        "UTR No. 847586423146",
+        "Paid by XXXXXX1883 AUTOPAY",
+    ], 1)
+    assert tx is not None
+    assert tx["payment_mode"] == "autopay"
+    assert tx["is_autopay"] is True

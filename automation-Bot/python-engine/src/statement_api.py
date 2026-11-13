@@ -44,6 +44,8 @@ def build_statement_overview(result):
             "transactions_needing_review": int(result.get("transactions_needing_review", 0)),
             "unclassified_transactions": int(result.get("unclassified_transactions", 0)),
             "awaiting_user_confirmation": int(result.get("awaiting_user_confirmation", 0)),
+            "autopay_transactions": sum(1 for tx in transactions if tx.get("payment_mode") == "autopay"),
+            "payment_mode_unknown": sum(1 for tx in transactions if tx.get("payment_mode", "unknown") == "unknown"),
         },
         "category_wise_expenses": [
             {"category": category, "amount": round(amount, 2)}

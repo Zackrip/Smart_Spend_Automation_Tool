@@ -324,6 +324,11 @@ def parse_transaction_block(lines, page_number):
 
     metadata = extract_payment_metadata(block)
 
+    # PhonePe PDF statements explicitly print an AUTOPAY badge for mandate-based
+    # debits. Do not infer Auto Pay from merchant names or recurring amounts.
+    is_autopay = bool(re.search(r"\bAUTOPAY\b", block, re.IGNORECASE))
+    payment_mode = "autopay" if is_autopay else "unknown"
+
     return {
         "transaction_date": transaction_date,
         "transaction_time": transaction_time,
@@ -345,6 +350,9 @@ def parse_transaction_block(lines, page_number):
 
         "payment_source": metadata["payment_source"],
         "credited_to": metadata["credited_to"],
+        "payment_mode": payment_mode,
+        "is_autopay": True if is_autopay else None,
+        "autopay_detection_source": "phonepe_pdf_badge" if is_autopay else None,
 
         "transaction_id": (
             transaction_id_match.group(1)

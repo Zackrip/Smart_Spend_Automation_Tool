@@ -48,3 +48,11 @@ def test_normalizes_list():
     result = normalize_statement_transactions([sample(), sample(merchant="Store")])
     assert len(result) == 2
     assert result[1]["merchant"] == "Store"
+
+
+def test_schema_preserves_explicit_autopay_and_unknown():
+    base = sample()
+    autopay = normalize_statement_transaction({**base, "payment_mode": "autopay"})
+    unknown = normalize_statement_transaction({**base, "payment_mode": "unknown"})
+    assert autopay["is_autopay"] is True
+    assert unknown["is_autopay"] is None

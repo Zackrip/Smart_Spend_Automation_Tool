@@ -40,6 +40,19 @@ def normalize_statement_transaction(transaction):
     normalized.setdefault("transaction_id", None)
     normalized.setdefault("utr", None)
     normalized.setdefault("source", "unknown")
+
+    # Payment mode is independent of merchant/category and recurrence.
+    # None means the source statement did not provide enough evidence.
+    payment_mode = str(normalized.get("payment_mode") or "unknown").strip().lower()
+    if payment_mode not in {"autopay", "manual", "unknown"}:
+        payment_mode = "unknown"
+    normalized["payment_mode"] = payment_mode
+    normalized.setdefault("is_autopay", True if payment_mode == "autopay" else None)
+    normalized.setdefault("autopay_detection_source", None)
+    if payment_mode == "autopay":
+        normalized["is_autopay"] = True
+    elif payment_mode == "unknown":
+        normalized["is_autopay"] = None
     return normalized
 
 

@@ -162,6 +162,11 @@ def _normalise_row(row: Dict[str, str], row_number: int) -> Dict:
         "source_row_number": row_number,
         "original_transaction_type": direction,
         "credit_debit_instrument": instrument or None,
+        # PhonePe CSV does not expose the PDF's AUTOPAY badge. Keep this
+        # unknown rather than incorrectly labelling every CSV debit as manual.
+        "payment_mode": "unknown",
+        "is_autopay": None,
+        "autopay_detection_source": None,
     }
 
 
