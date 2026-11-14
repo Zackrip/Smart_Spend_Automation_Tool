@@ -12,13 +12,18 @@ const sequelize = new Sequelize({
     }
 );
 
+
 const connectDB = async () => {
-  try {
-    await sequelize.authenticate();
-    console.log("PostgreSQL connected ✅");
-  } catch (error) {
-    console.error("PostgreSQL connection failed ❌", error.message);
-  }
+    try {
+        await sequelize.authenticate();
+
+        console.log("PostgreSQL connected!");
+
+    } catch (error) {
+        console.error("Database connection failed:", error);
+        throw error;
+    }
 };
+
 
 export { sequelize, connectDB };
