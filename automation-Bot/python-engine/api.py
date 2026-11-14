@@ -1,3 +1,5 @@
+from unittest import result
+
 from fastapi import FastAPI, HTTPException,UploadFile, File
 from src.merchant_learning import record_user_feedback
 from fastapi.responses import StreamingResponse
@@ -22,6 +24,8 @@ from src.transaction_classifier import classify_transaction
 from src.transaction_type_detector import detect_transaction_type
 from src.personal_transfer_classifier import classify_personal_transfer, save_personal_contact
 from src.ride_payment_reconciliation import detect_ride_event, confirm_ride_payment
+from src.spending_insights import generate_spending_insights
+from src.behavior_insights import generate_behavior_insights
 # ==========================================
 # 1. FASTAPI INITIALIZATION
 # ==========================================
@@ -693,11 +697,29 @@ async def import_phonepe_statement(
         if not result.get("transactions"):
             raise HTTPException(status_code=400, detail="No transactions extracted.")
 
+        
+# Build existing statement overview
+        overview = build_statement_overview(result)
+
+# Generate spending insights (Phase 1 + Phase 2)
+        spending_insights = generate_spending_insights(
+        result["transactions"]
+        )
+
+# Generate behaviour insights (Phase 3)
+        behavior_insights = generate_behavior_insights(
+        result["transactions"]
+        )
+
+# Return complete response
         return {
-            "status": "success",
-            "source_format": source_format,
-            **build_statement_overview(result)
+        "status": "success",
+        "source_format": source_format,
+        **overview,
+        "spending_insights": spending_insights,
+        "behavior_insights": behavior_insights
         }
+
 
     except HTTPException:
         raise
