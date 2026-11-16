@@ -3,7 +3,7 @@ import {
   createCategorySchema,
   updateCategorySchema,
   validate,
-} from "../middlewares/validation.middleware.js";
+} from "../validators/categoryValidation.validator.js";
 
 import categoryController from "../controllers/category.controller.js";
 import verifyToken from "../middlewares/auth.middleware.js";

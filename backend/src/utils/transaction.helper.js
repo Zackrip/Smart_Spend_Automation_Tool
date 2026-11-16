@@ -1,19 +1,9 @@
 import { Op } from "sequelize";
-import Transaction from "../models/transaction.model.js";
 import Category from "../models/category.model.js";
-
-const transactions = await Transaction.findAll({
-    include: [
-        {
-            model: Category,
-            attributes: ["id", "name", "icon", "type"],
-        },
-    ],
-});
 
 const checkCategory = async (userId, categoryId, type) => {
     if (!categoryId) return null;
-
+    
     const category = await Category.findOne({
         where: {
             id: categoryId,
@@ -99,4 +89,4 @@ const buildFilter = (userId, q) => {
     return filter;
 };
 
-export default {transactions, checkCategory, buildFilter };
+export default { checkCategory, buildFilter };
