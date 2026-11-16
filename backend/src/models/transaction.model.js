@@ -1,6 +1,6 @@
 import { DataTypes, Op } from "sequelize";
 import crypto from "crypto";
-import sequelize from "../config/database.js";
+import { sequelize } from "../configs/database.config.js";
 import { TRANSACTION_CONSTANTS } from "../constants/transaction.constant.js";
 
 const Transaction = sequelize.define(
@@ -42,7 +42,7 @@ const Transaction = sequelize.define(
 
     paymentMethod: {
       type: DataTypes.ENUM(...TRANSACTION_CONSTANTS.PAYMENT_MODES),
-      defaultValue: "other",
+      defaultValue: "Other",
       allowNull: false,
     },
 
